@@ -18,20 +18,11 @@ class GetConfig:
                 return vt_api_key.group(2)
         config.close()
 
-    def OTXAPI(self):
-        """Gets the AlienVault OTX API Key"""
-        config = open(self.fn, 'r+b')
-        for line in config:
-            otx_api_key = search(r'(^OTX_API: )(.+)', line)
-            if otx_api_key:
-                return otx_api_key.group(2)
-        config.close()
-
     def FSBAPI(self):
         """Gets Falcon Sandbox API Key"""
         config = open(self.fn, 'r+b')
         for line in config:
-            fsb_api_key = search(r'^FSB_API: )(.+)', line)
+            fsb_api_key = search(r'(^FSB_API: )(.+)', line)
             if fsb_api_key:
                 return fsb_api_key.group(2)
         config.close()
