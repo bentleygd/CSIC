@@ -117,6 +117,10 @@ class DomainOSINT:
             uh_bl = response.json().get('blacklists')
             self.uh_surbl = uh_bl.get('surbl')
             self.uh_shbl = uh_bl.get('spamhaus_dbl')
+        elif resposne.get('query_status') == 'no_results':
+            self.uh_mw = 'no results'
+            self.uh_surbl = 'no results'
+            self.uh_shbl = 'no results'
 
 
 class URLOSINT:
