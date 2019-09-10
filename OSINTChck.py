@@ -7,6 +7,7 @@ class IPOSINT:
     def __init__(self, ip):
         self.ip = ip
         self.vt_country = str()
+        self.vt_owner = str()
         self.vt_urls = int()
         self.vt_refs = int()
         self.vt_comm = int()
@@ -20,6 +21,7 @@ class IPOSINT:
         url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
         params = {'apikey': vt_api, 'ip': self.ip}
         data = get(url, params=params).json()
+        self.vt_owner = data.get('as_owner')
         self.vt_country = data.get('country')
         self.vt_urls = len(data.get('detected_urls'))
         self.vt_refs = len(data.get('detected_referrer_samples'))
@@ -53,7 +55,7 @@ class IPOSINT:
             if self.ip == entry:
                 self.tbl_status = 'Blacklisted IP'
             else:
-                self.tbl_stauts = 'Non-blacklisted IP'
+                self.tbl_status = 'Non-blacklisted IP'
 
 
 class DomainOSINT:
@@ -67,6 +69,9 @@ class DomainOSINT:
         self.tc_ips = list()
         self.tm_mw = int()
         self.fsb_mw = int()
+        self.uh_mw = int()
+        self.uh_surbl = str()
+        self.uh_shbl = str()
 
     def VTChck(self, vt_api):
         url = 'https://www.virustotal.com/vtapi/v2/domain/report'
@@ -83,7 +88,7 @@ class DomainOSINT:
     def TCChck(self):
         url = 'https://www.threatcrowd.org/searchApi/v2/domain/report/'
         params = {'domain': self.domain}
-        data = get(url, params=parmas).json()
+        data = get(url, params=params).json()
         self.tc_rc = len(data.get('resolutions'))
         for entry in data.get('resolutions'):
             self.tc_ips.append({'ip_address': entry.get('ip_address'),
@@ -103,6 +108,56 @@ class DomainOSINT:
         response = post(url, headers=headers, data=data)
         self.fsb_mw = response.json().get('count')
 
+    def UHChck(self):
+        url = 'https://urlhaus-api.abuse.ch/v1/host/'
+        data = {'host': self.domain}
+        response = post(url, data=data)
+        if response.get('query_status') == 'ok':
+            self.uh_mw = response.json().get('url_count')
+            uh_bl = response.json().get('blacklists')
+            self.uh_surbl = uh_bl.get('surbl')
+            self.uh_shbl = uh_bl.get('spamhaus_dbl')
+
+
+class URLOSINT:
+    def __init__(self, b_url):
+        self.b_url = b_url
+        self.vc_sd = str()
+        self.vc_sr = int()
+        self.fsb_mw = int()
+        self.uh_status = str()
+        self.uh_gsb = str()
+        self.uh_surbl = str()
+        self.uh_shbl = str()
+
+    def VTChck(self, vt_api):
+        url = 'https://www.virustotal.com/vtapi/v2/url/report'
+        params = {'apikey': vt_api, 'resource': self.b_url}
+        data = get(url, params=params).json()
+        if data.get('response_code') == 1:
+            self_vc_sd = data.get('scan_date')
+            self.vc_sr = data.get('positives')
+
+    def FSBChck(self, fsb_api):
+        url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
+        headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
+        data = {'url': self.b_url}
+        response = post(url, headers=headers, data=data).json()
+        self.fsb_mw = response.get('count')
+
+    def UHChck(self):
+        url = 'https://urlhaus-api.abuse.ch/v1/url/'
+        data = {'url': self.b_url}
+        response = post(url, data=data).json()
+        if response.get('query_status') == 'ok':
+            self.uh_status = response.get('threat')
+            uh_bl = response.get('blacklists')
+            self.uh_gsb = uh_bl.get('gsb')
+            self.uh_surbl = uh_bl.get('surbl')
+            self.uh_shbl = uh_bl.get('spamhaus_dbl')
+        else:
+            self.uh_status = response.get('query_status')
+            
 
 config = GetConfig('config.cnf')
 vt_api_key = config.VTAPI()
