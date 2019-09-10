@@ -117,7 +117,7 @@ class DomainOSINT:
             uh_bl = response.json().get('blacklists')
             self.uh_surbl = uh_bl.get('surbl')
             self.uh_shbl = uh_bl.get('spamhaus_dbl')
-        elif resposne.get('query_status') == 'no_results':
+        elif response.get('query_status') == 'no_results':
             self.uh_mw = 'no results'
             self.uh_surbl = 'no results'
             self.uh_shbl = 'no results'
@@ -139,7 +139,7 @@ class URLOSINT:
         params = {'apikey': vt_api, 'resource': self.b_url}
         data = get(url, params=params).json()
         if data.get('response_code') == 1:
-            self_vc_sd = data.get('scan_date')
+            self.vc_sd = data.get('scan_date')
             self.vc_sr = data.get('positives')
 
     def FSBChck(self, fsb_api):
@@ -161,7 +161,7 @@ class URLOSINT:
             self.uh_shbl = uh_bl.get('spamhaus_dbl')
         else:
             self.uh_status = response.get('query_status')
-            
+  
 
 config = GetConfig('config.cnf')
 vt_api_key = config.VTAPI()
