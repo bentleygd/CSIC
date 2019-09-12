@@ -20,42 +20,65 @@ class IPOSINT:
     def VTChck(self, vt_api):
         url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
         params = {'apikey': vt_api, 'ip': self.ip}
-        data = get(url, params=params).json()
-        self.vt_owner = data.get('as_owner')
-        self.vt_country = data.get('country')
-        self.vt_urls = len(data.get('detected_urls'))
-        self.vt_refs = len(data.get('detected_referrer_samples'))
-        self.vt_comm = len(data.get('detected_communicating_samples'))
-        self.vt_dl = len(data.get('detected_downloaded_samples'))
+        response = get(url, params=params)
+        if response.status_code == 200:
+            data = response.json()
+            self.vt_owner = data.get('as_owner')
+            self.vt_country = data.get('country')
+            self.vt_urls = len(data.get('detected_urls'))
+            self.vt_refs = len(data.get('detected_referrer_samples'))
+            self.vt_comm = len(data.get('detected_communicating_samples'))
+            self.vt_dl = len(data.get('detected_downloaded_samples'))
+            return response.status_code
+        else:
+            return response.status_code
 
     def TCChck(self):
         url = 'https://www.threatcrowd.org/searchApi/v2/ip/report/'
         params = {'ip': self.ip}
         data = get(url, params=params).json()
-        self.tc_mw = len(data.get('hashes'))
+        if data.get('response_code') == '1':
+            self.tc_mw = len(data.get('hashes'))
+            status_code = 200
+            return status_code
+        else:
+            status_code = 404
+            return status_code
 
     def TMChck(self):
         url = 'https://api.threatminer.org/v2/host.php'
         params = {'q': self.ip, 'rt': '4'}
         data = get(url, params=params).json()
-        if data.get('status_message') == 'Results found.':
+        if data.get('status_code') == '200':
             self.tm_mw = len(data.get('results'))
+            return int(data.get('status_code'))
+        else:
+            return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'host': self.ip}
         response = post(url, headers=headers, data=data)
-        self.fsb_mw = response.json().get('count')
+        if response.status_code == 200:
+            self.fsb_mw = response.json().get('count')
+            return response.status_code
+        else:
+            return response.status_code
 
     def TBLChck(self):
         url = 'https://talosintelligence.com/documents/ip-blacklist'
-        response = get(url)
-        for entry in response.text.split('\n'):
-            if self.ip == entry:
-                self.tbl_status = 'Blacklisted IP'
-            else:
-                self.tbl_status = 'Non-blacklisted IP'
+        try:
+            response = get(url)
+            for entry in response.text.split('\n'):
+                if self.ip == entry:
+                    self.tbl_status = 'Blacklisted IP'
+                else:
+                    self.tbl_status = 'Non-blacklisted IP'
+        except ConnectionError:
+            print('Unable to retreive Talos Blacklist due to network ' +
+                  'connection problems.')
+            pass
 
 
 class DomainOSINT:
@@ -76,14 +99,17 @@ class DomainOSINT:
     def VTChck(self, vt_api):
         url = 'https://www.virustotal.com/vtapi/v2/domain/report'
         params = {'apikey': vt_api, 'domain': self.domain}
-        data = get(url, params=params).json()
-        if data.get('response_code') == 1:
-            self.vt_mw_dl = len(data.get('detected_downloaded_samples'))
-            self.vt_cats = data.get('categories')
-            self.vt_subd = data.get('subdomains')
-            self.vt_durls = len(data.get('detected_urls'))
-        elif data.get('reponse_code') == 0:
-            pass
+        response = get(url, params=params)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('response_code') == 1:
+                self.vt_mw_dl = len(data.get('detected_downloaded_samples'))
+                self.vt_cats = data.get('categories')
+                self.vt_subd = data.get('subdomains')
+                self.vt_durls = len(data.get('detected_urls'))
+            return response.status_code
+        else:
+            return response.status_code
 
     def TCChck(self):
         url = 'https://www.threatcrowd.org/searchApi/v2/domain/report/'
@@ -137,10 +163,15 @@ class URLOSINT:
     def VTChck(self, vt_api):
         url = 'https://www.virustotal.com/vtapi/v2/url/report'
         params = {'apikey': vt_api, 'resource': self.b_url}
-        data = get(url, params=params).json()
-        if data.get('response_code') == 1:
-            self.vc_sd = data.get('scan_date')
-            self.vc_sr = data.get('positives')
+        response = get(url, param=params)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('response_code') == 1:
+                self.vc_sd = data.get('scan_date')
+                self.vc_sr = data.get('positives')
+            return response.status_code
+        else:
+            return response.status_code
 
     def FSBChck(self, fsb_api):
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
@@ -161,7 +192,7 @@ class URLOSINT:
             self.uh_shbl = uh_bl.get('spamhaus_dbl')
         else:
             self.uh_status = response.get('query_status')
-  
+
 
 config = GetConfig('config.cnf')
 vt_api_key = config.VTAPI()
