@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from coreutils import GetConfig
-from requests import get, post
+from requests import get, post, ConnectionError
 
 
 class IPOSINT:
@@ -16,6 +16,9 @@ class IPOSINT:
         self.tm_mw = int()
         self.fsb_mw = int()
         self.tbl_status = str()
+        self.uh_mw = int()
+        self.uh_surbl = str()
+        self.uh_shbl = str()
 
     def VTChck(self, vt_api):
         url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
@@ -29,9 +32,7 @@ class IPOSINT:
             self.vt_refs = len(data.get('detected_referrer_samples'))
             self.vt_comm = len(data.get('detected_communicating_samples'))
             self.vt_dl = len(data.get('detected_downloaded_samples'))
-            return response.status_code
-        else:
-            return response.status_code
+        return response.status_code
 
     def TCChck(self):
         url = 'https://www.threatcrowd.org/searchApi/v2/ip/report/'
@@ -40,10 +41,9 @@ class IPOSINT:
         if data.get('response_code') == '1':
             self.tc_mw = len(data.get('hashes'))
             status_code = 200
-            return status_code
         else:
             status_code = 404
-            return status_code
+        return status_code
 
     def TMChck(self):
         url = 'https://api.threatminer.org/v2/host.php'
@@ -51,9 +51,7 @@ class IPOSINT:
         data = get(url, params=params).json()
         if data.get('status_code') == '200':
             self.tm_mw = len(data.get('results'))
-            return int(data.get('status_code'))
-        else:
-            return int(data.get('status_code'))
+        return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
@@ -62,9 +60,7 @@ class IPOSINT:
         response = post(url, headers=headers, data=data)
         if response.status_code == 200:
             self.fsb_mw = response.json().get('count')
-            return response.status_code
-        else:
-            return response.status_code
+        return response.status_code
 
     def TBLChck(self):
         url = 'https://talosintelligence.com/documents/ip-blacklist'
@@ -78,6 +74,25 @@ class IPOSINT:
         except ConnectionError:
             print('Unable to retreive Talos Blacklist due to network ' +
                   'connection problems.')
+            pass
+
+     def UHChck(self):
+        url = 'https://urlhaus-api.abuse.ch/v1/host/'
+        data = {'host': self.ip}
+        response = post(url, data=data)
+        try:
+            if response.get('query_status') == 'ok':
+                self.uh_mw = response.json().get('url_count')
+                uh_bl = response.json().get('blacklists')
+                self.uh_surbl = uh_bl.get('surbl')
+                self.uh_shbl = uh_bl.get('spamhaus_dbl')
+            else:
+                self.uh_mw = response.get('query_status')
+                self.uh_surbl = response.get('query_status')
+                self.uh_shbl = reponse.get('query_status')
+        except ConnectionError:
+            print('Unable to connect to URLHaus  due to network ' +
+                  'connection  problems.')
             pass
 
 
@@ -107,46 +122,57 @@ class DomainOSINT:
                 self.vt_cats = data.get('categories')
                 self.vt_subd = data.get('subdomains')
                 self.vt_durls = len(data.get('detected_urls'))
-            return response.status_code
-        else:
-            return response.status_code
+        return response.status_code
 
     def TCChck(self):
         url = 'https://www.threatcrowd.org/searchApi/v2/domain/report/'
         params = {'domain': self.domain}
         data = get(url, params=params).json()
-        self.tc_rc = len(data.get('resolutions'))
-        for entry in data.get('resolutions'):
-            self.tc_ips.append({'ip_address': entry.get('ip_address'),
-                               'r_time': entry.get('last_resolved')})
+        if data.get('response_code') == '1':
+            self.tc_rc = len(data.get('resolutions'))
+            for entry in data.get('resolutions'):
+                self.tc_ips.append({'ip_address': entry.get('ip_address'),
+                                   'r_time': entry.get('last_resolved')})
+            status_code = 200
+        else:
+            status_code = 404
+        return status_code
 
     def TMChck(self):
         url = 'https://api.threatminer.org/v2/domain.php'
         params = {'q': self.domain, 'rt': '4'}
         data = get(url, params=params).json()
-        if data.get('status_message') == 'Results found.':
+        if data.get('status_code') == '200':
             self.tm_mw = len(data.get('results'))
+        return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'domain': self.domain}
         response = post(url, headers=headers, data=data)
-        self.fsb_mw = response.json().get('count')
+        if response.status_code = 200:
+            self.fsb_mw = response.json().get('count')
+        return response.status_code
 
     def UHChck(self):
         url = 'https://urlhaus-api.abuse.ch/v1/host/'
         data = {'host': self.domain}
         response = post(url, data=data)
-        if response.get('query_status') == 'ok':
-            self.uh_mw = response.json().get('url_count')
-            uh_bl = response.json().get('blacklists')
-            self.uh_surbl = uh_bl.get('surbl')
-            self.uh_shbl = uh_bl.get('spamhaus_dbl')
-        elif response.get('query_status') == 'no_results':
-            self.uh_mw = 'no results'
-            self.uh_surbl = 'no results'
-            self.uh_shbl = 'no results'
+        try:
+            if response.get('query_status') == 'ok':
+                self.uh_mw = response.json().get('url_count')
+                uh_bl = response.json().get('blacklists')
+                self.uh_surbl = uh_bl.get('surbl')
+                self.uh_shbl = uh_bl.get('spamhaus_dbl')
+            else:
+                self.uh_mw = response.get('query_status')
+                self.uh_surbl = response.get('query_status')
+                self.uh_shbl = reponse.get('query_status')
+        except ConnectionError:
+            print('Unable to connect to URLHaus  due to network ' +
+                  'connection problems.')
+            pass
 
 
 class URLOSINT:
@@ -169,30 +195,35 @@ class URLOSINT:
             if data.get('response_code') == 1:
                 self.vc_sd = data.get('scan_date')
                 self.vc_sr = data.get('positives')
-            return response.status_code
-        else:
-            return response.status_code
+        return response.status_code
 
     def FSBChck(self, fsb_api):
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'url': self.b_url}
         response = post(url, headers=headers, data=data).json()
-        self.fsb_mw = response.get('count')
+        if response.status_code = 200:
+            self.fsb_mw = response.get('count')
+        return repsonse.status_code
+        
 
     def UHChck(self):
         url = 'https://urlhaus-api.abuse.ch/v1/url/'
         data = {'url': self.b_url}
-        response = post(url, data=data).json()
-        if response.get('query_status') == 'ok':
-            self.uh_status = response.get('threat')
-            uh_bl = response.get('blacklists')
-            self.uh_gsb = uh_bl.get('gsb')
-            self.uh_surbl = uh_bl.get('surbl')
-            self.uh_shbl = uh_bl.get('spamhaus_dbl')
-        else:
-            self.uh_status = response.get('query_status')
-
+        try:
+            response = post(url, data=data).json()
+            if response.get('query_status') == 'ok':
+                self.uh_status = response.get('threat')
+                uh_bl = response.get('blacklists')
+                self.uh_gsb = uh_bl.get('gsb')
+                self.uh_surbl = uh_bl.get('surbl')
+                self.uh_shbl = uh_bl.get('spamhaus_dbl')
+            else:
+                self.uh_status = response.get('query_status')
+        except ConnectionError:
+            print('Unable to connect to URLHaus  due to network ' +
+                  'connection problems.')
+            pass
 
 config = GetConfig('config.cnf')
 vt_api_key = config.VTAPI()
