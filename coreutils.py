@@ -2,9 +2,9 @@ from email.mime.text import MIMEText
 from socket import gethostbyname
 from re import search
 from smtplib import SMTP
+from urllib2 import URLError, HTTPError, urlopen
 
-
-class GetConfig:
+class getConfig:
     """A configuration class"""
     def __init__(self, file_location):
         self.fn = file_location
@@ -67,3 +67,16 @@ def MailSend(mail_sender, mail_recipients, subject, mail_server, mail_body):
     s = SMTP(gethostbyname(mail_server), '25')
     # Sending the mail.
     s.sendmail(mail_sender, mail_recipients, msg.as_string())
+
+def testURL(url):
+    """Tests if connectivity to a URL is successful or not."""
+    url = url
+    try:
+        test = urlopen(url)
+        if test.getcode() == 200:
+            print 'The connection to %s was successful.' % (url)
+    except URLError as URLError:
+        print r'Unable to connect to % because:\n%s' % (url, URLError.reason)
+    except HTTPError as HTTPError:
+        print(r'Unable to connect to %s.\nHTTP Status Code: %s\n' +
+              'Reason: %s') % (url, HTTPError.code, HTTPError.reason)

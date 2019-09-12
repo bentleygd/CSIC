@@ -1,6 +1,5 @@
 #!/usr/bin/python
-from coreutils import GetConfig
-from requests import get, post, ConnectionError
+from requests import get, post
 
 
 class IPOSINT:
@@ -21,6 +20,7 @@ class IPOSINT:
         self.uh_shbl = str()
 
     def VTChck(self, vt_api):
+        """ Checks VirusTotal for info for a given IP address."""
         url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
         params = {'apikey': vt_api, 'ip': self.ip}
         response = get(url, params=params)
@@ -35,6 +35,7 @@ class IPOSINT:
         return response.status_code
 
     def TCChck(self):
+        """ Checks ThreatCrowd for info for a given IP."""
         url = 'https://www.threatcrowd.org/searchApi/v2/ip/report/'
         params = {'ip': self.ip}
         data = get(url, params=params).json()
@@ -46,6 +47,7 @@ class IPOSINT:
         return status_code
 
     def TMChck(self):
+        """Checks ThreatMiner for info for a given IP."""
         url = 'https://api.threatminer.org/v2/host.php'
         params = {'q': self.ip, 'rt': '4'}
         data = get(url, params=params).json()
@@ -54,6 +56,7 @@ class IPOSINT:
         return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
+        """Checks hybrid-analysis for info for a given IP."""
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'host': self.ip}
@@ -63,37 +66,28 @@ class IPOSINT:
         return response.status_code
 
     def TBLChck(self):
+        """Checks to see if an IP is on the Talos blacklist."""
         url = 'https://talosintelligence.com/documents/ip-blacklist'
-        try:
-            response = get(url)
-            for entry in response.text.split('\n'):
-                if self.ip == entry:
-                    self.tbl_status = 'Blacklisted IP'
-                else:
-                    self.tbl_status = 'Non-blacklisted IP'
-        except ConnectionError:
-            print('Unable to retreive Talos Blacklist due to network ' +
-                  'connection problems.')
-            pass
+        response = get(url)
+        for entry in response.text.split('\n'):
+            if self.ip == entry:
+                self.tbl_status = 'Blacklisted IP'
+            else:
+                self.tbl_status = 'Non-blacklisted IP'
 
-     def UHChck(self):
+    def UHChck(self):
+        """Checks URLHaus for info for a given IP."""
         url = 'https://urlhaus-api.abuse.ch/v1/host/'
         data = {'host': self.ip}
         response = post(url, data=data)
-        try:
-            if response.get('query_status') == 'ok':
-                self.uh_mw = response.json().get('url_count')
-                uh_bl = response.json().get('blacklists')
-                self.uh_surbl = uh_bl.get('surbl')
-                self.uh_shbl = uh_bl.get('spamhaus_dbl')
-            else:
-                self.uh_mw = response.get('query_status')
-                self.uh_surbl = response.get('query_status')
-                self.uh_shbl = reponse.get('query_status')
-        except ConnectionError:
-            print('Unable to connect to URLHaus  due to network ' +
-                  'connection  problems.')
-            pass
+        if response.get('query_status') == 'ok':
+            self.uh_mw = response.json().get('url_count')
+            uh_bl = response.json().get('blacklists')
+            self.uh_surbl = uh_bl.get('surbl')
+            self.uh_shbl = uh_bl.get('spamhaus_dbl')
+        else:
+            self.uh_mw = response.get('query_status')
+        return response.get('query_status')
 
 
 class DomainOSINT:
@@ -112,6 +106,7 @@ class DomainOSINT:
         self.uh_shbl = str()
 
     def VTChck(self, vt_api):
+        """Checks VirusTotal for info for a given domain."""
         url = 'https://www.virustotal.com/vtapi/v2/domain/report'
         params = {'apikey': vt_api, 'domain': self.domain}
         response = get(url, params=params)
@@ -125,6 +120,7 @@ class DomainOSINT:
         return response.status_code
 
     def TCChck(self):
+        """Checks ThreatCrowd for info for a given domain."""
         url = 'https://www.threatcrowd.org/searchApi/v2/domain/report/'
         params = {'domain': self.domain}
         data = get(url, params=params).json()
@@ -139,6 +135,7 @@ class DomainOSINT:
         return status_code
 
     def TMChck(self):
+        """Checks ThreatMiner for info for a given domain."""
         url = 'https://api.threatminer.org/v2/domain.php'
         params = {'q': self.domain, 'rt': '4'}
         data = get(url, params=params).json()
@@ -147,32 +144,28 @@ class DomainOSINT:
         return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
+        """Checks hybrid analysis for info for a given domain."""
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'domain': self.domain}
         response = post(url, headers=headers, data=data)
-        if response.status_code = 200:
+        if response.status_code == 200:
             self.fsb_mw = response.json().get('count')
         return response.status_code
 
     def UHChck(self):
+        """Checks URLhaus for info for a given domain."""
         url = 'https://urlhaus-api.abuse.ch/v1/host/'
         data = {'host': self.domain}
         response = post(url, data=data)
-        try:
-            if response.get('query_status') == 'ok':
-                self.uh_mw = response.json().get('url_count')
-                uh_bl = response.json().get('blacklists')
-                self.uh_surbl = uh_bl.get('surbl')
-                self.uh_shbl = uh_bl.get('spamhaus_dbl')
-            else:
-                self.uh_mw = response.get('query_status')
-                self.uh_surbl = response.get('query_status')
-                self.uh_shbl = reponse.get('query_status')
-        except ConnectionError:
-            print('Unable to connect to URLHaus  due to network ' +
-                  'connection problems.')
-            pass
+        if response.get('query_status') == 'ok':
+            self.uh_mw = response.json().get('url_count')
+            uh_bl = response.json().get('blacklists')
+            self.uh_surbl = uh_bl.get('surbl')
+            self.uh_shbl = uh_bl.get('spamhaus_dbl')
+        else:
+            self.uh_mw = response.get('query_status')
+        return response.get('query_status')
 
 
 class URLOSINT:
@@ -187,6 +180,7 @@ class URLOSINT:
         self.uh_shbl = str()
 
     def VTChck(self, vt_api):
+        """Checks VirusTotal for info for a given URL."""
         url = 'https://www.virustotal.com/vtapi/v2/url/report'
         params = {'apikey': vt_api, 'resource': self.b_url}
         response = get(url, param=params)
@@ -198,33 +192,26 @@ class URLOSINT:
         return response.status_code
 
     def FSBChck(self, fsb_api):
+        """Checks hybrid analysis for infor for a given URL."""
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'url': self.b_url}
         response = post(url, headers=headers, data=data).json()
-        if response.status_code = 200:
+        if response.status_code == 200:
             self.fsb_mw = response.get('count')
         return repsonse.status_code
         
-
     def UHChck(self):
+        """Checks URLhaus for info for a givne URL."""
         url = 'https://urlhaus-api.abuse.ch/v1/url/'
         data = {'url': self.b_url}
-        try:
-            response = post(url, data=data).json()
-            if response.get('query_status') == 'ok':
-                self.uh_status = response.get('threat')
-                uh_bl = response.get('blacklists')
-                self.uh_gsb = uh_bl.get('gsb')
-                self.uh_surbl = uh_bl.get('surbl')
-                self.uh_shbl = uh_bl.get('spamhaus_dbl')
-            else:
-                self.uh_status = response.get('query_status')
-        except ConnectionError:
-            print('Unable to connect to URLHaus  due to network ' +
-                  'connection problems.')
-            pass
-
-config = GetConfig('config.cnf')
-vt_api_key = config.VTAPI()
-fsb_api_key = config.FSBAPI()
+        response = post(url, data=data).json()
+        if response.get('query_status') == 'ok':
+            self.uh_status = response.get('threat')
+            uh_bl = response.get('blacklists')
+            self.uh_gsb = uh_bl.get('gsb')
+            self.uh_surbl = uh_bl.get('surbl')
+            self.uh_shbl = uh_bl.get('spamhaus_dbl')
+        else:
+            self.uh_status = response.get('query_status')
+        return response.get('query_status')
