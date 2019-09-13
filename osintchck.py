@@ -19,14 +19,19 @@ class IPOSINT:
         response = get(url, params=params)
         if response.status_code == 200:
             data = response.json()
-            self.vt_results = {
-                'owner': data.get('as_owner'),
-                'country': data.get('country'),
-                'urls': len(data.get('detected_urls')),
-                'refs': len(data.get('detected_referrer_samples')),
-                'comm': len(data.get('detected_communicating_samples')),
-                'downloads': len(data.get('detected_downloaded_samples'))
-            }
+            if 'detected_downloaded_samples' in data:
+                self.vt_results = {
+                    'owner': data.get('as_owner'),
+                    'country': data.get('country'),
+                    'urls': len(data.get('detected_urls')),
+                    'downloads': len(data.get('detected_downloaded_samples'))
+                }
+            else:
+                self.vt_results = {
+                    'owner': data.get('as_owner'),
+                    'country': data.get('country'),
+                    'urls': len(data.get('detected_urls'))
+                }
         return response.status_code
 
     def TCChck(self):
@@ -74,11 +79,11 @@ class IPOSINT:
         """Checks URLHaus for info for a given IP."""
         url = 'https://urlhaus-api.abuse.ch/v1/host/'
         data = {'host': self.ip}
-        response = post(url, data=data)
+        response = post(url, data=data).json()
         if response.get('query_status') == 'ok':
-            uh_bl = response.json().get('blacklists')
+            uh_bl = response.get('blacklists')
             self.uh_results = {
-                'mw_count': response.json().get('url_count'),
+                'mw_count': response.get('url_count'),
                 'surbl': uh_bl.get('surbl'),
                 'shbl': uh_bl.get('spamhaus_dbl')
             }
@@ -149,15 +154,15 @@ class DomainOSINT:
         """Checks URLhaus for info for a given domain."""
         url = 'https://urlhaus-api.abuse.ch/v1/host/'
         data = {'host': self.domain}
-        response = post(url, data=data)
+        response = post(url, data=data).json()
         if response.get('query_status') == 'ok':
-            uh_bl = response.json().get('blacklists')
+            uh_bl = response.get('blacklists')
             self.uh_results = {
-                'mw_count': response.json().get('url_count'),
+                'mw_count': response.get('url_count'),
                 'surbl': uh_bl.get('surbl'),
                 'shbl': uh_bl.get('spamhaus_dbl')
             }
-        return response.get('query_status')
+        return response('query_status')
 
 
 class URLOSINT:
@@ -190,7 +195,7 @@ class URLOSINT:
         if response.status_code == 200:
             self.fsb_mw = response.get('count')
         return response.status_code
- 
+
     def UHChck(self):
         """Checks URLhaus for info for a given URL."""
         url = 'https://urlhaus-api.abuse.ch/v1/url/'
