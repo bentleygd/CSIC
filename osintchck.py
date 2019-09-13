@@ -5,19 +5,12 @@ from requests import get, post
 class IPOSINT:
     def __init__(self, ip):
         self.ip = ip
-        self.vt_country = str()
-        self.vt_owner = str()
-        self.vt_urls = int()
-        self.vt_refs = int()
-        self.vt_comm = int()
-        self.vt_dl = int()
+        self.vt_results = dict()
         self.tc_mw = int()
         self.tm_mw = int()
         self.fsb_mw = int()
         self.tbl_status = str()
-        self.uh_mw = int()
-        self.uh_surbl = str()
-        self.uh_shbl = str()
+        self.uh_results = dict()
 
     def VTChck(self, vt_api):
         """ Checks VirusTotal for info for a given IP address."""
@@ -26,12 +19,14 @@ class IPOSINT:
         response = get(url, params=params)
         if response.status_code == 200:
             data = response.json()
-            self.vt_owner = data.get('as_owner')
-            self.vt_country = data.get('country')
-            self.vt_urls = len(data.get('detected_urls'))
-            self.vt_refs = len(data.get('detected_referrer_samples'))
-            self.vt_comm = len(data.get('detected_communicating_samples'))
-            self.vt_dl = len(data.get('detected_downloaded_samples'))
+            self.vt_results = {
+                'owner': data.get('as_owner'),
+                'country': data.get('country'),
+                'urls': len(data.get('detected_urls')),
+                'refs': len(data.get('detected_referrer_samples')),
+                'comm': len(data.get('detected_communicating_samples')),
+                'downloads': len(data.get('detected_downloaded_samples'))
+            }
         return response.status_code
 
     def TCChck(self):
@@ -81,10 +76,12 @@ class IPOSINT:
         data = {'host': self.ip}
         response = post(url, data=data)
         if response.get('query_status') == 'ok':
-            self.uh_mw = response.json().get('url_count')
             uh_bl = response.json().get('blacklists')
-            self.uh_surbl = uh_bl.get('surbl')
-            self.uh_shbl = uh_bl.get('spamhaus_dbl')
+            self.uh_results = {
+                'mw_count': response.json().get('url_count'),
+                'surbl': uh_bl.get('surbl'),
+                'shbl': uh_bl.get('spamhaus_dbl')
+            }
         else:
             self.uh_mw = response.get('query_status')
         return response.get('query_status')
@@ -93,17 +90,12 @@ class IPOSINT:
 class DomainOSINT:
     def __init__(self, domain_name):
         self.domain = domain_name
-        self.vt_mw_dl = int()
-        self.vt_cats = list()
-        self.vt_subd = list()
-        self.vt_durls = int()
+        self.vt_results = dict()
         self.tc_rc = int()
         self.tc_ips = list()
         self.tm_mw = int()
         self.fsb_mw = int()
-        self.uh_mw = int()
-        self.uh_surbl = str()
-        self.uh_shbl = str()
+        self.uh_results = dict()
 
     def VTChck(self, vt_api):
         """Checks VirusTotal for info for a given domain."""
@@ -113,10 +105,12 @@ class DomainOSINT:
         if response.status_code == 200:
             data = response.json()
             if data.get('response_code') == 1:
-                self.vt_mw_dl = len(data.get('detected_downloaded_samples'))
-                self.vt_cats = data.get('categories')
-                self.vt_subd = data.get('subdomains')
-                self.vt_durls = len(data.get('detected_urls'))
+                self.vt_results = {
+                    'downloads': len(data.get('detected_downloaded_samples')),
+                    'categories': data.get('categories'),
+                    'subdomains': data.get('subdomains'),
+                    'url_count': len(data.get('detected_urls'))
+                }
         return response.status_code
 
     def TCChck(self):
@@ -159,10 +153,12 @@ class DomainOSINT:
         data = {'host': self.domain}
         response = post(url, data=data)
         if response.get('query_status') == 'ok':
-            self.uh_mw = response.json().get('url_count')
             uh_bl = response.json().get('blacklists')
-            self.uh_surbl = uh_bl.get('surbl')
-            self.uh_shbl = uh_bl.get('spamhaus_dbl')
+            self.uh_results = {
+                'mw_count': response.json().get('url_count'),
+                'surbl': uh_bl.get('surbl'),
+                'shbl': uh_bl.get('spamhaus_dbl')
+            }
         else:
             self.uh_mw = response.get('query_status')
         return response.get('query_status')
@@ -171,13 +167,9 @@ class DomainOSINT:
 class URLOSINT:
     def __init__(self, b_url):
         self.b_url = b_url
-        self.vc_sd = str()
-        self.vc_sr = int()
+        self.vc_results = dict()
         self.fsb_mw = int()
-        self.uh_status = str()
-        self.uh_gsb = str()
-        self.uh_surbl = str()
-        self.uh_shbl = str()
+        self.uh_results = dict()
 
     def VTChck(self, vt_api):
         """Checks VirusTotal for info for a given URL."""
@@ -187,8 +179,10 @@ class URLOSINT:
         if response.status_code == 200:
             data = response.json()
             if data.get('response_code') == 1:
-                self.vc_sd = data.get('scan_date')
-                self.vc_sr = data.get('positives')
+                self.vc_results = {
+                    'scan_date': data.get('scan_date'),
+                    'positives': data.get('positives')
+                }
         return response.status_code
 
     def FSBChck(self, fsb_api):
@@ -202,16 +196,16 @@ class URLOSINT:
         return repsonse.status_code
         
     def UHChck(self):
-        """Checks URLhaus for info for a givne URL."""
+        """Checks URLhaus for info for a given URL."""
         url = 'https://urlhaus-api.abuse.ch/v1/url/'
         data = {'url': self.b_url}
         response = post(url, data=data).json()
         if response.get('query_status') == 'ok':
-            self.uh_status = response.get('threat')
             uh_bl = response.get('blacklists')
-            self.uh_gsb = uh_bl.get('gsb')
-            self.uh_surbl = uh_bl.get('surbl')
-            self.uh_shbl = uh_bl.get('spamhaus_dbl')
-        else:
-            self.uh_status = response.get('query_status')
+            self.uh_results = {
+                'status': response.get('threat'),
+                'gsb': uh_bl.get('gsb'),
+                'surbl': uh_bl.get('surbl'),
+                'shbl': uh_bl.get('spamhaus_dbl')
+            }
         return response.get('query_status')

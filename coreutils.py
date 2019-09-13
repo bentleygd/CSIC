@@ -4,6 +4,7 @@ from re import search
 from smtplib import SMTP
 from urllib2 import URLError, HTTPError, urlopen
 
+
 class getConfig:
     """A configuration class"""
     def __init__(self, file_location):
@@ -68,15 +69,18 @@ def MailSend(mail_sender, mail_recipients, subject, mail_server, mail_body):
     # Sending the mail.
     s.sendmail(mail_sender, mail_recipients, msg.as_string())
 
+
 def testURL(url):
     """Tests if connectivity to a URL is successful or not."""
-    url = url
+    if not search(r'(http)(.+)', url).group(1):
+        print r'URL provided does not begin with http(s).'
+        exit(1)
     try:
         test = urlopen(url)
         if test.getcode() == 200:
             print 'The connection to %s was successful.' % (url)
-    except URLError as URLError:
-        print r'Unable to connect to % because:\n%s' % (url, URLError.reason)
-    except HTTPError as HTTPError:
+    except URLError as uerror:
+        print r'Unable to connect to % because:\n%s' % (url, uerror.reason)
+    except HTTPError as herror:
         print(r'Unable to connect to %s.\nHTTP Status Code: %s\n' +
-              'Reason: %s') % (url, HTTPError.code, HTTPError.reason)
+              'Reason: %s') % (url, herror.code, herror.reason)
