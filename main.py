@@ -18,7 +18,7 @@ def main():
     a_parse.add_argument('indicator', type=str, help='Indicator to check ' +
                                                      'for.')
     args = a_parse.parse_args()
-    
+ 
     # Setting the configuration.
     config = getConfig('config.cnf')
     vt_api_key = config.VTAPI()
@@ -32,7 +32,21 @@ def main():
         try:
             vt = ip_chck.VTChck(vt_api_key)
             if vt == 200:
-                print ip_chck.vt_results
+                print '*' * 32
+                print 'VT Results'
+                vt_results = ip_chck.vt_results
+                if 'downloads' in vt_results:
+                    print 'IP Owner: %s' % vt_results.get('owner')
+                    print 'Country: %s' % vt_results.get('country')
+                    print 'Malicious URL count: %d' % vt_results.get('urls')
+                    print 'Malware download count: %d' % (
+                          vt_results.get('downloads')
+                          )
+                else:
+                    print 'IP Owner: %s' % vt_results.get('owner')
+                    print 'Country: %s' % vt_results.get('country')
+                    print 'Malicious URL count: %d' % vt_results.get('urls')
+
         except ConnectionError:
             print('Unable to connect to VirusTotal due to network ' +
                   'problems.')
@@ -40,15 +54,19 @@ def main():
         try:
             tc = ip_chck.TCChck()
             if tc == 200:
-                print ip_chck.tc_mw
+                print '*' * 32
+                print 'ThreatCrowd Results'
+                print 'Associated malware count: %d' % ip_chck.tc_mw
         except ConnectionError:
             print('Unable to connect to ThreatCrowd due to network ' +
                   'problems.')
-        
+ 
         try:
             tm = ip_chck.TMChck()
             if tm == 200:
-                print ip_chck.tm_mw
+                print '*' * 32
+                print 'ThreatMiner Results'
+                print 'Associated malware count: %d' % ip_chck.tm_mw
         except ConnectionError:
             print('Unable to connect to ThreatMiner due to network ' +
                   'problems.')
@@ -56,24 +74,35 @@ def main():
         try:
             fsb = ip_chck.FSBChck(fsb_api_key)
             if fsb == 200:
-                print ip_chck.fsb_mw
+                print '*' * 32
+                print 'Hybrid Analysis Results'
+                print 'Associated malware count: %d' % ip_chck.fsb_mw
         except ConnectionError:
             print('Unable to connect to Hybrid Analysis due to network ' +
                   'problems.')
 
         try:
-            tbl = ip_chck.TBLChck()
-            print ip_chck.tbl_status
+            ip_chck.TBLChck()
+            print '*' * 32
+            print 'Talos Blacklist Check'
+            print 'Blacklist status: %s' % ip_chck.tbl_status
         except ConnectionError:
             print('Unable to retrieve the Talos IP blacklist due to ' +
                   'network problems.')
 
         try:
-            uh = ip_chck.UHChck()
-            if uh == 'ok':
-                print ip_chck.uh_results
+            urlh = ip_chck.UHChck()
+            if urlh == 'ok':
+                u_results = ip_chck.uh_results
+                print '*' * 32
+                print 'URLHaus Results'
+                print 'Malicious URL count: %s' % u_results.get('mw_count')
+                print 'SURBL status: %s' % u_results.get('surbl')
+                print 'Spamhaus DBL Status: %s' % u_results.get('shbl')
             else:
-                print uh
+                print '*' * 32
+                print 'URLHaus Results'
+                print 'URLHaus status: %s' % urlh
         except ConnectionError:
             print('Unable to connect to URLHaus due to network ' +
                   'problems.')

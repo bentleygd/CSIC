@@ -68,8 +68,8 @@ class IPOSINT:
     def TBLChck(self):
         """Checks to see if an IP is on the Talos blacklist."""
         url = 'https://talosintelligence.com/documents/ip-blacklist'
-        response = get(url)
-        for entry in response.text.split('\n'):
+        response = get(url).text
+        for entry in response.split('\n'):
             if self.ip == entry:
                 self.tbl_status = 'Blacklisted IP'
             else:
