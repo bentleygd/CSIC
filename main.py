@@ -46,7 +46,9 @@ def main():
                     print 'IP Owner: %s' % vt_results.get('owner')
                     print 'Country: %s' % vt_results.get('country')
                     print 'Malicious URL count: %d' % vt_results.get('urls')
-
+            else:
+                print 'Unable to successfully connnect to VirusTotal. ' +
+                      'The HTTP error code is %d\n' % vt
         except ConnectionError:
             print('Unable to connect to VirusTotal due to network ' +
                   'problems.')
@@ -57,6 +59,10 @@ def main():
                 print '*' * 32
                 print 'ThreatCrowd Results'
                 print 'Associated malware count: %d' % ip_chck.tc_mw
+            else:
+                print '*' * 32
+                print 'ThreatCrowd Results'
+                print 'No results found on ThreatCrowd'
         except ConnectionError:
             print('Unable to connect to ThreatCrowd due to network ' +
                   'problems.')
@@ -67,6 +73,10 @@ def main():
                 print '*' * 32
                 print 'ThreatMiner Results'
                 print 'Associated malware count: %d' % ip_chck.tm_mw
+            else:
+                print '*' * 32
+                print 'ThreatMiner Results'
+                print 'No results found on ThreatMiner.'
         except ConnectionError:
             print('Unable to connect to ThreatMiner due to network ' +
                   'problems.')
@@ -77,12 +87,15 @@ def main():
                 print '*' * 32
                 print 'Hybrid Analysis Results'
                 print 'Associated malware count: %d' % ip_chck.fsb_mw
+            else:
+                print 'Unable to succesfully connect to Hybrid ' +
+                      'Analysis.  The HTTP error code is: %d' % (fsb)
         except ConnectionError:
             print('Unable to connect to Hybrid Analysis due to network ' +
                   'problems.')
 
         try:
-            ip_chck.TBLChck()
+            tbl = ip_chck.TBLChck()
             print '*' * 32
             print 'Talos Blacklist Check'
             print 'Blacklist status: %s' % ip_chck.tbl_status
