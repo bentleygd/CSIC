@@ -82,8 +82,6 @@ class IPOSINT:
                 'surbl': uh_bl.get('surbl'),
                 'shbl': uh_bl.get('spamhaus_dbl')
             }
-        else:
-            self.uh_mw = response.get('query_status')
         return response.get('query_status')
 
 
@@ -159,8 +157,6 @@ class DomainOSINT:
                 'surbl': uh_bl.get('surbl'),
                 'shbl': uh_bl.get('spamhaus_dbl')
             }
-        else:
-            self.uh_mw = response.get('query_status')
         return response.get('query_status')
 
 
@@ -193,8 +189,8 @@ class URLOSINT:
         response = post(url, headers=headers, data=data).json()
         if response.status_code == 200:
             self.fsb_mw = response.get('count')
-        return repsonse.status_code
-        
+        return response.status_code
+ 
     def UHChck(self):
         """Checks URLhaus for info for a given URL."""
         url = 'https://urlhaus-api.abuse.ch/v1/url/'

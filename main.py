@@ -9,7 +9,7 @@ a_parse.add_argument('-I', '--ip', action='store_true',
                      help='Check for IP address')
 a_parse.add_argument('-D', '--dns', action='store_true',
                      help='Check for DNS Name')
-a_parse.add_argument('-U', '--url', action='store_true', 
+a_parse.add_argument('-U', '--url', action='store_true',
                      help='Check for URL')
 a_parse.add_argument('indicator', type=str, help='Indicator to check for.')
 args = a_parse.parse_args()

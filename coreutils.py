@@ -79,8 +79,8 @@ def testURL(url):
         test = urlopen(url)
         if test.getcode() == 200:
             print 'The connection to %s was successful.' % (url)
-    except URLError as uerror:
-        print r'Unable to connect to % because:\n%s' % (url, uerror.reason)
     except HTTPError as herror:
-        print(r'Unable to connect to %s.\nHTTP Status Code: %s\n' +
+        print('Unable to connect to %s.\nHTTP Status Code: %s\n' +
               'Reason: %s') % (url, herror.code, herror.reason)
+    except URLError as uerror:
+        print 'Unable to connect to % because:\n%s' % (url, uerror.reason)
