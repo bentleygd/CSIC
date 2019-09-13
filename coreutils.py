@@ -83,4 +83,4 @@ def testURL(url):
         print('Unable to connect to %s.\nHTTP Status Code: %s\n' +
               'Reason: %s') % (url, herror.code, herror.reason)
     except URLError as uerror:
-        print 'Unable to connect to %\nReason: %s\n' % (url, uerror.reason)
+        print 'Unable to connect to %s\nReason: %s\n' % (url, uerror.reason)

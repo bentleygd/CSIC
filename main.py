@@ -18,7 +18,7 @@ def main():
     a_parse.add_argument('indicator', type=str, help='Indicator to check ' +
                                                      'for.')
     args = a_parse.parse_args()
- 
+
     # Setting the configuration.
     config = getConfig('config.cnf')
     vt_api_key = config.VTAPI()
@@ -60,7 +60,7 @@ def main():
         except ConnectionError:
             print('Unable to connect to ThreatCrowd due to network ' +
                   'problems.')
- 
+
         try:
             tm = ip_chck.TMChck()
             if tm == 200:
