@@ -108,12 +108,20 @@ class DomainOSINT:
         if response.status_code == 200:
             data = response.json()
             if data.get('response_code') == 1:
-                self.vt_results = {
-                    'downloads': len(data.get('detected_downloaded_samples')),
-                    'categories': data.get('categories'),
-                    'subdomains': data.get('subdomains'),
-                    'url_count': len(data.get('detected_urls'))
-                }
+                if 'detected_downloaded_samples' in data:
+                    self.vt_results = {
+                        'downloads': len(data.get(
+                                         'detected_downloaded_samples')),
+                        'categories': data.get('categories'),
+                        'subdomains': data.get('subdomains'),
+                        'url_count': len(data.get('detected_urls'))
+                    }
+                else:
+                    self.vt_results = {
+                        'categories': data.get('categories'),
+                        'subdomains': data.get('subdomains'),
+                        'url_count': len(data.get('detected_urls'))
+                    }
         return response.status_code
 
     def TCChck(self):
@@ -162,7 +170,7 @@ class DomainOSINT:
                 'surbl': uh_bl.get('surbl'),
                 'shbl': uh_bl.get('spamhaus_dbl')
             }
-        return response('query_status')
+        return response.get('query_status')
 
 
 class URLOSINT:
