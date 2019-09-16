@@ -25,11 +25,10 @@ def main():
     vt_api_key = config.VTAPI()
     fsb_api_key = config.FSBAPI()
 
-    # Looking for IP info (if applicable).
+    # Looking for IP info.
     if args.ip:
         ip_chck = osintchck.IPOSINT(args.indicator)
-        # Attempting to run various checks and making a note if they are
-        # not successful.
+
         try:
             vt = ip_chck.VTChck(vt_api_key)
             if vt == 200:
@@ -53,6 +52,7 @@ def main():
         except ConnectionError:
             print('Unable to connect to VirusTotal due to network ' +
                   'problems.')
+            pass
 
         try:
             tc = ip_chck.TCChck()
@@ -65,6 +65,7 @@ def main():
         except ConnectionError:
             print('Unable to connect to ThreatCrowd due to network ' +
                   'problems.')
+            pass
 
         try:
             tm = ip_chck.TMChck()
@@ -77,6 +78,7 @@ def main():
         except ConnectionError:
             print('Unable to connect to ThreatMiner due to network ' +
                   'problems.')
+            pass
 
         try:
             fsb = ip_chck.FSBChck(fsb_api_key)
@@ -90,15 +92,20 @@ def main():
         except ConnectionError:
             print('Unable to connect to Hybrid Analysis due to network ' +
                   'problems.')
+            pass
 
         try:
             tbl = ip_chck.TBLChck()
             print '*' * 32
             print 'Talos Blacklist Check:'
-            print 'Blacklist status: %s' % ip_chck.tbl_status
+            if tbl == 200:
+                print 'Blacklist status: %s' % ip_chck.tbl_status
+            else:
+                print 'Talos Return Code: %d' % tbl
         except ConnectionError:
             print('Unable to retrieve the Talos IP blacklist due to ' +
                   'network problems.')
+            pass
 
         try:
             urlh = ip_chck.UHChck()
@@ -114,9 +121,10 @@ def main():
         except ConnectionError:
             print('Unable to connect to URLHaus due to network ' +
                   'problems.')
+            pass
 
+    # Looking for domain info.
     if args.dns:
-        # Looking for domain info (if applicable).
         dns_chck = osintchck.DomainOSINT(args.indicator)
         try:
             vt = dns_chck.VTChck(vt_api_key)
@@ -152,7 +160,7 @@ def main():
                       'HTTP error code is %d\n') % vt
         except ConnectionError:
             print 'Unable to connect to VirusTotal due to network problems.'
-
+            pass
 
         try:
             tc = dns_chck.TCChck()
@@ -170,6 +178,7 @@ def main():
         except ConnectionError:
                 print('Unable to connect to ThreatCrowd due to network ' +
                       'problems')
+                pass
 
         try:
             tm = dns_chck.TMChck()
@@ -181,6 +190,7 @@ def main():
                 print 'No results found on ThreatMiner.'
         except ConnectionError:
             print 'Unable to connect to ThreatMiner due to network problems.'
+            pass
 
         try:
             fsb = dns_chck.FSBChck(fsb_api_key)
@@ -194,6 +204,7 @@ def main():
         except ConnectionError:
             print('Unable to connect to Hybrid Analyis due to network ' +
                   'problems.')
+            pass
 
         try:
             urlh = dns_chck.UHChck()
@@ -209,6 +220,56 @@ def main():
                 print 'URLHaus status: %s' % urlh
         except ConnectionError:
             print 'Unable to connect to URLHaus due to network problems.'
+            pass
+
+    # Looking for URL related info.
+    if args.url:
+        u_chck = osintchck.URLOSINT(args.indicator)
+
+        try:
+            vt = u_chck.VTChck(vt_api_key)
+            if vt == 200:
+                v_results = u_chck.vc_results
+                print '*' * 32
+                print 'VirusTotal Results:'
+                print 'Last Scan Date: %s' % v_results.get('scan_date')
+                print 'Malicious Detections: %d' % v_results.get('positives')
+            else:
+                print('Unable to succesfully connect to VirusTotal. ' +
+                      'HTTP error code is %d\n') % vt
+        except ConnectionError:
+            print 'Unable to connect to VirusTotal due to network problems.'
+            pass
+
+        try:
+            fsb = u_chck.FSBChck(fsb_api_key)
+            if fsb == 200:
+                print '*' * 32
+                print 'Hybrid Analysis Results:'
+                print 'Associated Malware Count: %d' % u_chck.fsb_mw
+            else:
+                print('Unable to successfully connect to Hybrid Analysis. ' +
+                      'The HTTP error code is: %d\n') % fsb
+        except ConnectionError:
+            print('Unable to connect to Hybrid Analysis due to ' +
+                  'network problems.')
+            pass
+
+        try:
+            urlh = u_chck.UHChck()
+            print '*' * 32
+            print 'URLHaus Results:'
+            if urlh == 'ok':
+                u_results = u_chck.uh_results
+                print 'Threat Category: %s' % u_results.get('status')
+                print 'Google Safe Browsing: %s' % u_results.get('gsb')
+                print 'SURBL: %s' % u_results.get('surbl')
+                print 'Spamhaus BL: %s' % u_results.get('spamhaus_dbl')
+            else:
+                print 'URLHaus Status: %s' % urlh
+        except ConnectionError:
+            print 'Unable to connect to URL Haus due to network problems'
+            pass
 
 
 if __name__ == '__main__':

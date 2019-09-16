@@ -68,12 +68,13 @@ class IPOSINT:
     def TBLChck(self):
         """Checks to see if an IP is on the Talos blacklist."""
         url = 'https://talosintelligence.com/documents/ip-blacklist'
-        response = get(url).text
-        for entry in response.split('\n'):
-            if self.ip == entry:
-                self.tbl_status = 'Blacklisted IP'
-            else:
-                self.tbl_status = 'Non-blacklisted IP'
+        response = get(url)
+        data = response.text.split('\n')
+        if self.ip in data:
+            self.tbl_status = 'Blacklisted IP'
+        else:
+            self.tbl_status = 'Non-blacklisted IP'
+        return response.status_code
 
     def UHChck(self):
         """Checks URLHaus for info for a given IP."""
@@ -184,7 +185,7 @@ class URLOSINT:
         """Checks VirusTotal for info for a given URL."""
         url = 'https://www.virustotal.com/vtapi/v2/url/report'
         params = {'apikey': vt_api, 'resource': self.b_url}
-        response = get(url, param=params)
+        response = get(url, params=params)
         if response.status_code == 200:
             data = response.json()
             if data.get('response_code') == 1:
@@ -199,9 +200,9 @@ class URLOSINT:
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'url': self.b_url}
-        response = post(url, headers=headers, data=data).json()
+        response = post(url, headers=headers, data=data)
         if response.status_code == 200:
-            self.fsb_mw = response.get('count')
+            self.fsb_mw = response.json().get('count')
         return response.status_code
 
     def UHChck(self):
