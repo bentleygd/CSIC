@@ -72,7 +72,8 @@ def MailSend(mail_sender, mail_recipients, subject, mail_server, mail_body):
 
 def testURL(url):
     """Tests if connectivity to a URL is successful or not."""
-    if not search(r'(http)(.+)', url).group(1):
+    input_test = search(r'(^https:|^http:)(.+)', url)
+    if not input_test.group(1):
         print r'URL provided does not begin with http(s).'
         exit(1)
     try:
