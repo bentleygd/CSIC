@@ -220,12 +220,14 @@ class URLOSINT:
             }
         return response.get('query_status')
 
+
 class FileOSINT:
     def __init__(self, filehash):
         self.hash = filehash
+        self.vt_response = int()
         self.vt_results = dict()
         self.fsb_r_code = int()
-        self.fsb_results = dict() 
+        self.fsb_results = dict()
 
     def VTChck(self, vt_api):
         """Checks VirusTotal for info for a given file hash."""
@@ -234,15 +236,16 @@ class FileOSINT:
         response = get(url, params=params)
         if response.status_code == 200:
             data = response.json()
+            self.vt_response = data.get('response_code')
             if data.get('response_code') == 1:
                 vt_percent = int(round(
-                             float(response.get('positives')) 
-                             / float(response.get('total'))
-                             , 2) * 100)
+                             float(data.get('positives'))
+                             / float(data.get('total'))
+                             ,2) * 100)
                 self.vt_results = {
-                    'av_detect': response.get('positives')
-                    'av_percent': vt_percent
-                }    
+                    'av_detect': data.get('positives'),
+                    'av_percentage': vt_percent
+                } 
         return response.status_code
 
     def FSBChck(self, fsb_api):
@@ -255,9 +258,9 @@ class FileOSINT:
                 if len(response.json()) > 0:
                     self.fsb_r_code = 1
                     self.fsb_results = {
-                        'verdict': response.json().get('verdict')
-                        'm_family': response.json().get('vx_family')
+                        'verdict': response.json()[0].get('verdict'),
+                        'm_family': response.json()[0].get('vx_family')
                     }
                 else:
-                    self.fsb_r_code = 0 
+                    self.fsb_r_code = 0
         return response.status_code

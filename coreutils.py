@@ -88,15 +88,16 @@ def testURL(url):
     except URLError as uerror:
         print 'Unable to connect to %s\nReason: %s\n' % (url, uerror.reason)
 
+
 def hashFile(filename):
     """Computes the SHA256 hash of a file."""
     try:
         if exists(filename):
-            hashed_file = open(filename, rb)
+            hashed_file = open(filename, 'r+b')
         else:
             raise IOError
     except IOError:
         print 'The file specified does not exist.  Aborting.'
         exit(1)
-    file_hash = sha256(hashed_file.read()) 
+    file_hash = sha256(hashed_file.read())
     return file_hash

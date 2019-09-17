@@ -83,10 +83,10 @@ def main():
             fsb = ip_chck.FSBChck(fsb_api_key)
             if fsb == 200:
                 print '*' * 32
-                print 'Hybrid Analysis Results:'
+                print 'HybridAnalysis Results:'
                 print 'Associated malware count: %d' % ip_chck.fsb_mw
             else:
-                print('Unable to succesfully connect to Hybrid ' +
+                print('Unable to succesfully connect to Hybrid' +
                       'Analysis.  The HTTP error code is: %d\n') % (fsb)
         except ConnectionError:
             print('Unable to connect to Hybrid Analysis due to network ' +
@@ -189,13 +189,13 @@ def main():
             fsb = dns_chck.FSBChck(fsb_api_key)
             if fsb == 200:
                 print '*' * 32
-                print 'Hybrid Analysis Results:'
+                print 'HybridAnalysis Results:'
                 print 'Associated malware count: %d' % dns_chck.fsb_mw
             else:
-                print('Unable to succesfully connect to Hybrid Analysis. ' +
+                print('Unable to succesfully connect to HybridAnalysis. ' +
                       'The HTTP error code is %d\n') % fsb
         except ConnectionError:
-            print('Unable to connect to Hybrid Analyis due to network ' +
+            print('Unable to connect to HybridAnalyis due to network ' +
                   'problems.')
 
         try:
@@ -235,13 +235,13 @@ def main():
             fsb = u_chck.FSBChck(fsb_api_key)
             if fsb == 200:
                 print '*' * 32
-                print 'Hybrid Analysis Results:'
+                print 'HybridAnalysis Results:'
                 print 'Associated Malware Count: %d' % u_chck.fsb_mw
             else:
-                print('Unable to successfully connect to Hybrid Analysis. ' +
+                print('Unable to successfully connect to HybridAnalysis. ' +
                       'The HTTP error code is: %d\n') % fsb
         except ConnectionError:
-            print('Unable to connect to Hybrid Analysis due to ' +
+            print('Unable to connect to HybridAnalysis due to ' +
                   'network problems.')
 
         try:
@@ -266,7 +266,40 @@ def main():
 
         try:
             vt = f_chck.VTChck(vt_api_key)
-            
+            if vt == 200:
+                print '*' * 32
+                print 'VirusTotal Results:'
+                if f_chck.vt_response == 1:
+                    vt_results = f_chck.vt_results
+                    print 'AV Vendor Count: %d' % vt_results.get('av_detect')
+                    print('Vendor detection percentage: %d' % 
+                          vt_results.get('av_percent'))
+                else:
+                    print 'Nothing found for the given hash on VirusTotal'
+            else:
+                print('Unable to succsefully connect to Virus Total. The ' +
+                      'HTTP error code is %d\n' % vt)
+        except ConnectionError:
+            print 'Unable to connect to VirusTotal due to network problems.'
+
+        try:
+            fsb = f_chck.FSBChck(fsb_api_key)
+            if fsb == 200:
+                print '*' * 32
+                print 'HybridAnalysis Results:'
+                if f_chck.fsb_r_code == 1:
+                    f_results = f_chck.fsb_results
+                    print 'File verdict: %s' % f_results.get('verdict')
+                    print 'Malware family: %s' % f_results.get('m_family')
+                else:
+                    print 'Nothing found on the given hash on HybridAnalysis.'
+            else:
+                print('Unable to succesfully connect to HybridAnalysis. ' +
+                      'The HTTP error code is: %d\n' % fsb)
+        except ConnectionError:
+            print('Unable to connect to HybridAnalysis due to network ' +
+                  'problems.')
+
 
 if __name__ == '__main__':
     main()
