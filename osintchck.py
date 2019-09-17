@@ -240,7 +240,7 @@ class FileOSINT:
             if data.get('response_code') == 1:
                 vt_percent = int(round(
                              float(data.get('positives'))
-                             /float(data.get('total'))
+                             / float(data.get('total'))
                              , 2) * 100)
                 self.vt_results = {
                     'av_detect': data.get('positives'),
