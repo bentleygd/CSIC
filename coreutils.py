@@ -1,6 +1,8 @@
 from email.mime.text import MIMEText
 from socket import gethostbyname
 from re import search
+from os.path import exists
+from hashlib import sha256
 from smtplib import SMTP
 from urllib2 import URLError, HTTPError, urlopen
 
@@ -85,3 +87,16 @@ def testURL(url):
               'Reason: %s') % (url, herror.code, herror.reason)
     except URLError as uerror:
         print 'Unable to connect to %s\nReason: %s\n' % (url, uerror.reason)
+
+def hashFile(filename):
+    """Computes the SHA256 hash of a file."""
+    try:
+        if exists(filename):
+            hashed_file = open(filename, rb)
+        else:
+            raise IOError
+    except IOError:
+        print 'The file specified does not exist.  Aborting.'
+        exit(1)
+    file_hash = sha256(hashed_file.read()) 
+    return file_hash

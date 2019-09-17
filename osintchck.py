@@ -219,3 +219,45 @@ class URLOSINT:
                 'shbl': uh_bl.get('spamhaus_dbl')
             }
         return response.get('query_status')
+
+class FileOSINT:
+    def __init__(self, filehash):
+        self.hash = filehash
+        self.vt_results = dict()
+        self.fsb_r_code = int()
+        self.fsb_results = dict() 
+
+    def VTChck(self, vt_api):
+        """Checks VirusTotal for info for a given file hash."""
+        url = 'https://www.virustotal.com/vtapi/v2/file/report'
+        params = {'apikey': vt_api, 'resource': self.hash}
+        response = get(url, params=params)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('response_code') == 1:
+                vt_percent = int(round(
+                             float(response.get('positives')) 
+                             / float(response.get('total'))
+                             , 2) * 100)
+                self.vt_results = {
+                    'av_detect': response.get('positives')
+                    'av_percent': vt_percent
+                }    
+        return response.status_code
+
+    def FSBChck(self, fsb_api):
+        """Checks Hybrid Analysis for info for a given file hash."""
+        url = 'https://www.hybrid-analysis.com/api/v2/search/hash'
+        headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
+        data = {'hash': self.hash}
+        response = post(url, headers=headers, data=data)
+        if response.status_code == 200:
+                if len(response.json()) > 0:
+                    self.fsb_r_code = 1
+                    self.fsb_results = {
+                        'verdict': response.json().get('verdict')
+                        'm_family': response.json().get('vx_family')
+                    }
+                else:
+                    self.fsb_r_code = 0 
+        return response.status_code
