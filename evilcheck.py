@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from coreutils import getConfig
+from coreutils import getConfig, hashFile
 from requests import ConnectionError
 import osintchck
 import argparse
@@ -10,11 +10,13 @@ def main():
     a_parse = argparse.ArgumentParser(description='Open Threat Intel ' +
                                                   'checker.')
     a_parse.add_argument('-I', '--ip', action='store_true',
-                         help='Check for IP address')
+                         help='Check for IP address info.')
     a_parse.add_argument('-D', '--dns', action='store_true',
-                         help='Check for DNS Name')
+                         help='Check for DNS info.')
     a_parse.add_argument('-U', '--url', action='store_true',
-                         help='Check for URL')
+                         help='Check for URL info.')
+    a_parse.add_argument('-F', '--file', action='store_true',
+                         help='Check for File info.')
     a_parse.add_argument('indicator', type=str, help='Indicator to check ' +
                                                      'for.')
     args = a_parse.parse_args()
@@ -81,10 +83,10 @@ def main():
             fsb = ip_chck.FSBChck(fsb_api_key)
             if fsb == 200:
                 print '*' * 32
-                print 'Hybrid Analysis Results:'
+                print 'HybridAnalysis Results:'
                 print 'Associated malware count: %d' % ip_chck.fsb_mw
             else:
-                print('Unable to succesfully connect to Hybrid ' +
+                print('Unable to succesfully connect to Hybrid' +
                       'Analysis.  The HTTP error code is: %d\n') % (fsb)
         except ConnectionError:
             print('Unable to connect to Hybrid Analysis due to network ' +
@@ -187,13 +189,13 @@ def main():
             fsb = dns_chck.FSBChck(fsb_api_key)
             if fsb == 200:
                 print '*' * 32
-                print 'Hybrid Analysis Results:'
+                print 'HybridAnalysis Results:'
                 print 'Associated malware count: %d' % dns_chck.fsb_mw
             else:
-                print('Unable to succesfully connect to Hybrid Analysis. ' +
+                print('Unable to succesfully connect to HybridAnalysis. ' +
                       'The HTTP error code is %d\n') % fsb
         except ConnectionError:
-            print('Unable to connect to Hybrid Analyis due to network ' +
+            print('Unable to connect to HybridAnalyis due to network ' +
                   'problems.')
 
         try:
@@ -233,13 +235,13 @@ def main():
             fsb = u_chck.FSBChck(fsb_api_key)
             if fsb == 200:
                 print '*' * 32
-                print 'Hybrid Analysis Results:'
+                print 'HybridAnalysis Results:'
                 print 'Associated Malware Count: %d' % u_chck.fsb_mw
             else:
-                print('Unable to successfully connect to Hybrid Analysis. ' +
+                print('Unable to successfully connect to HybridAnalysis. ' +
                       'The HTTP error code is: %d\n') % fsb
         except ConnectionError:
-            print('Unable to connect to Hybrid Analysis due to ' +
+            print('Unable to connect to HybridAnalysis due to ' +
                   'network problems.')
 
         try:
@@ -256,6 +258,47 @@ def main():
                 print 'URLHaus Status: %s' % urlh
         except ConnectionError:
             print 'Unable to connect to URL Haus due to network problems'
+
+    # Looking for file realted info.
+    if args.file:
+        file_hash = hashFile(args.indicator)
+        f_chck = osintchck.FileOSINT(file_hash)
+
+        try:
+            vt = f_chck.VTChck(vt_api_key)
+            if vt == 200:
+                print '*' * 32
+                print 'VirusTotal Results:'
+                if f_chck.vt_response == 1:
+                    vt_results = f_chck.vt_results
+                    print 'AV Vendor Count: %d' % vt_results.get('av_detect')
+                    print('Vendor detection percentage: %d' %
+                          vt_results.get('av_percent'))
+                else:
+                    print 'Nothing found for the given hash on VirusTotal'
+            else:
+                print('Unable to succsefully connect to Virus Total. The ' +
+                      'HTTP error code is %d\n' % vt)
+        except ConnectionError:
+            print 'Unable to connect to VirusTotal due to network problems.'
+
+        try:
+            fsb = f_chck.FSBChck(fsb_api_key)
+            if fsb == 200:
+                print '*' * 32
+                print 'HybridAnalysis Results:'
+                if f_chck.fsb_r_code == 1:
+                    f_results = f_chck.fsb_results
+                    print 'File verdict: %s' % f_results.get('verdict')
+                    print 'Malware family: %s' % f_results.get('m_family')
+                else:
+                    print 'Nothing found on the given hash on HybridAnalysis.'
+            else:
+                print('Unable to succesfully connect to HybridAnalysis. ' +
+                      'The HTTP error code is: %d\n' % fsb)
+        except ConnectionError:
+            print('Unable to connect to HybridAnalysis due to network ' +
+                  'problems.')
 
 
 if __name__ == '__main__':
