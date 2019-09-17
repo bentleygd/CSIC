@@ -240,12 +240,12 @@ class FileOSINT:
             if data.get('response_code') == 1:
                 vt_percent = int(round(
                              float(data.get('positives'))
-                             / float(data.get('total'))
-                             ,2) * 100)
+                             /float(data.get('total'))
+                             , 2) * 100)
                 self.vt_results = {
                     'av_detect': data.get('positives'),
                     'av_percentage': vt_percent
-                } 
+                }
         return response.status_code
 
     def FSBChck(self, fsb_api):
@@ -255,12 +255,12 @@ class FileOSINT:
         data = {'hash': self.hash}
         response = post(url, headers=headers, data=data)
         if response.status_code == 200:
-                if len(response.json()) > 0:
-                    self.fsb_r_code = 1
-                    self.fsb_results = {
-                        'verdict': response.json()[0].get('verdict'),
-                        'm_family': response.json()[0].get('vx_family')
-                    }
-                else:
-                    self.fsb_r_code = 0
+            if len(response.json()) > 0:
+                self.fsb_r_code = 1
+                self.fsb_results = {
+                    'verdict': response.json()[0].get('verdict'),
+                    'm_family': response.json()[0].get('vx_family')
+                }
+            else:
+                self.fsb_r_code = 0
         return response.status_code
