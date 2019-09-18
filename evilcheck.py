@@ -223,7 +223,7 @@ def main():
 
     # Looking for URL related info.
     if args.url:
-        if not validate.validURL(args.indicator):
+        if not validate.validateURL(args.indicator):
             exit(1)
         domain = args.indicator.split('/')[2]
         if not validate.validateDN(domain):

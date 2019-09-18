@@ -10,7 +10,8 @@ def validateIP(IP):
         if (int(octets[0]) <= 223 and
             int(octets[1]) <= 255 and
             int(octets[2]) <= 255 and
-            int(octets[3]) <= 254):
+            int(octets[3]) <= 254
+           ):
             return True
         else:
             return False
