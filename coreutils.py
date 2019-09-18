@@ -90,7 +90,7 @@ def testURL(url):
 
 
 def hashFile(filename):
-    """Computes the SHA256 hash of a file."""
+    """Takes a file and hashes the contents."""
     try:
         if exists(filename):
             hashed_file = open(filename, 'r+b')
@@ -99,5 +99,5 @@ def hashFile(filename):
     except IOError:
         print 'The file specified does not exist.  Aborting.'
         exit(1)
-    file_hash = sha256(hashed_file.read())
+    file_hash = sha256(hashed_file.read()).hexdigest()
     return file_hash
