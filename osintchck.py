@@ -158,10 +158,11 @@ class DomainOSINT:
         response = post(url, headers=headers, data=data)
         if response.status_code == 200:
             self.fsb_mw = response.json().get('count')
-            ts = int()
-            for result in response.json().get('result'):
-                ts = ts + result.get('threat_score')
-            self.fsb_ts_avg = ts / len(response.json().get('result'))
+            if self.fsb_mw > 0:
+                ts = int()
+                for result in response.json().get('result'):
+                    ts = ts + result.get('threat_score')
+                self.fsb_ts_avg = ts / len(response.json().get('result'))
         return response.status_code
 
     def UHChck(self):
@@ -182,6 +183,7 @@ class DomainOSINT:
 class URLOSINT:
     def __init__(self, b_url):
         self.b_url = b_url
+        self.vc_response = int()
         self.vc_results = dict()
         self.fsb_mw = int()
         self.uh_results = dict()
@@ -193,7 +195,8 @@ class URLOSINT:
         response = get(url, params=params)
         if response.status_code == 200:
             data = response.json()
-            if data.get('response_code') == 1:
+            self.vt_response = data.get('response_code')
+            if self.vt_response == 1:
                 self.vc_results = {
                     'scan_date': data.get('scan_date'),
                     'positives': data.get('positives')
@@ -242,7 +245,7 @@ class FileOSINT:
         if response.status_code == 200:
             data = response.json()
             self.vt_response = data.get('response_code')
-            if data.get('response_code') == 1:
+            if self.vt_response == 1:
                 vt_percent = int(round(
                              float(data.get('positives'))
                              / float(data.get('total'))
