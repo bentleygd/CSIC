@@ -99,6 +99,7 @@ class DomainOSINT:
         self.tc_ips = list()
         self.tm_mw = int()
         self.fsb_mw = int()
+        self.fsb_ts = int()
         self.uh_results = dict()
 
     def VTChck(self, vt_api):
@@ -157,6 +158,10 @@ class DomainOSINT:
         response = post(url, headers=headers, data=data)
         if response.status_code == 200:
             self.fsb_mw = response.json().get('count')
+            ts = int()
+            for result in response.json().get('result'):
+                ts = ts + result.get('threat_score')
+            self.fsb_ts_avg = ts / len(response.json().get('result'))
         return response.status_code
 
     def UHChck(self):

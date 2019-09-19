@@ -198,7 +198,8 @@ def main():
             if fsb == 200:
                 print '*' * 32
                 print 'HybridAnalysis Results:'
-                print 'Associated malware count: %d' % dns_chck.fsb_mw
+                print 'Related sample count: %d' % dns_chck.fsb_mw
+                print 'Average sample threat score: %d' % dns_chck.fsb_ts_avg
             else:
                 print('Unable to succesfully connect to HybridAnalysis. ' +
                       'The HTTP error code is %d\n') % fsb
