@@ -99,7 +99,7 @@ class DomainOSINT:
         self.tc_ips = list()
         self.tm_mw = int()
         self.fsb_mw = int()
-        self.fsb_ts = int()
+        self.fsb_ts_avg = int()
         self.uh_results = dict()
 
     def VTChck(self, vt_api):
