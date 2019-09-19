@@ -239,7 +239,7 @@ def main():
             if vt == 200:
                 print '*' * 32
                 print 'VirusTotal Results:'
-                if u_chck.vc_response == 1:
+                if u_chck.vt_response == 1:
                     v_results = u_chck.vc_results
                     print 'Last Scan Date: %s' % v_results.get('scan_date')
                     print('Malicious Detections: %d' %
