@@ -183,7 +183,7 @@ class DomainOSINT:
 class URLOSINT:
     def __init__(self, b_url):
         self.b_url = b_url
-        self.vc_response = int()
+        self.vt_response = int()
         self.vc_results = dict()
         self.fsb_mw = int()
         self.uh_results = dict()

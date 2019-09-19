@@ -200,7 +200,7 @@ def main():
                 print 'HybridAnalysis Results:'
                 print 'Related sample count: %d' % dns_chck.fsb_mw
                 if dns_chck.fsb_mw > 0:
-                    print('Average sample threat score: %d' % 
+                    print('Average sample threat score: %d' %
                           dns_chck.fsb_ts_avg)
             else:
                 print('Unable to succesfully connect to HybridAnalysis. ' +
@@ -242,7 +242,7 @@ def main():
                 if u_chck.vc_response == 1:
                     v_results = u_chck.vc_results
                     print 'Last Scan Date: %s' % v_results.get('scan_date')
-                    print('Malicious Detections: %d' % 
+                    print('Malicious Detections: %d' %
                           v_results.get('positives'))
                 else:
                     print 'Nothing found on VirusTotal for this URL.'
