@@ -288,7 +288,7 @@ def main():
                     vt_results = f_chck.vt_results
                     print 'AV Vendor Count: %d' % vt_results.get('av_detect')
                     print('Vendor detection percentage: %d' %
-                          vt_results.get('av_percent'))
+                          vt_results.get('av_percentage'))
                 else:
                     print 'Nothing found for the given hash on VirusTotal'
             else:

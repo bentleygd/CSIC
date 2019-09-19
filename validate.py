@@ -25,7 +25,6 @@ def validateDN(domain_name):
         # Checking label legnth for RFC 1035 compliance.
         labels = domain_name.split('.')
         for label in labels[0:len(labels) - 1]:
-            print label
             if not len(label) > 63:
                 # Checking label composition for RFC 1035 compliance.
                 valid_label = r'^[a-zA-Z0-9]+[a-zA-Z0-9-]*[a-zA-Z0-9]$'
