@@ -116,7 +116,7 @@ def main():
                 u_results = ip_chck.uh_results
                 print 'Malicious URL count: %s' % u_results.get('mw_count')
                 print 'SURBL status: %s' % u_results.get('surbl')
-                print 'Spamhaus DBL Status: %s' % u_results.get('shbl')
+                print 'Spamhaus DBL status: %s' % u_results.get('shbl')
             else:
                 print 'URLHaus status: %s' % urlh
         except ConnectionError:
@@ -216,7 +216,7 @@ def main():
                 print 'Associated malware count: %s' % (u_results.get(
                                                         'mw_count'))
                 print 'SURBL status: %s' % u_results.get('surbl')
-                print 'Spamhaus DBL Status: %s' % u_results.get('shbl')
+                print 'Spamhaus DBL status: %s' % u_results.get('shbl')
             else:
                 print 'URLHaus status: %s' % urlh
         except ConnectionError:
@@ -270,7 +270,7 @@ def main():
                 print 'SURBL: %s' % u_results.get('surbl')
                 print 'Spamhaus BL: %s' % u_results.get('spamhaus_dbl')
             else:
-                print 'URLHaus Status: %s' % urlh
+                print 'URLHaus status: %s' % urlh
         except ConnectionError:
             print 'Unable to connect to URL Haus due to network problems'
 
