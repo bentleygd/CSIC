@@ -199,7 +199,9 @@ def main():
                 print '*' * 32
                 print 'HybridAnalysis Results:'
                 print 'Related sample count: %d' % dns_chck.fsb_mw
-                print 'Average sample threat score: %d' % dns_chck.fsb_ts_avg
+                if dns_chck.fsb_mw > 0:
+                    print('Average sample threat score: %d' %
+                          dns_chck.fsb_ts_avg)
             else:
                 print('Unable to succesfully connect to HybridAnalysis. ' +
                       'The HTTP error code is %d\n') % fsb
@@ -235,11 +237,15 @@ def main():
         try:
             vt = u_chck.VTChck(vt_api_key)
             if vt == 200:
-                v_results = u_chck.vc_results
                 print '*' * 32
                 print 'VirusTotal Results:'
-                print 'Last Scan Date: %s' % v_results.get('scan_date')
-                print 'Malicious Detections: %d' % v_results.get('positives')
+                if u_chck.vt_response == 1:
+                    v_results = u_chck.vc_results
+                    print 'Last Scan Date: %s' % v_results.get('scan_date')
+                    print('Malicious Detections: %d' %
+                          v_results.get('positives'))
+                else:
+                    print 'Nothing found on VirusTotal for this URL.'
             else:
                 print('Unable to succesfully connect to VirusTotal. ' +
                       'HTTP error code is %d\n') % vt
