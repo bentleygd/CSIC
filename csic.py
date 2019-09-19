@@ -116,7 +116,7 @@ def main():
                 u_results = ip_chck.uh_results
                 print 'Malicious URL count: %s' % u_results.get('mw_count')
                 print 'SURBL status: %s' % u_results.get('surbl')
-                print 'Spamhaus DBL Status: %s' % u_results.get('shbl')
+                print 'Spamhaus DBL status: %s' % u_results.get('shbl')
             else:
                 print 'URLHaus status: %s' % urlh
         except ConnectionError:
@@ -198,7 +198,8 @@ def main():
             if fsb == 200:
                 print '*' * 32
                 print 'HybridAnalysis Results:'
-                print 'Associated malware count: %d' % dns_chck.fsb_mw
+                print 'Related sample count: %d' % dns_chck.fsb_mw
+                print 'Average sample threat score: %d' % dns_chck.fsb_ts_avg
             else:
                 print('Unable to succesfully connect to HybridAnalysis. ' +
                       'The HTTP error code is %d\n') % fsb
@@ -215,7 +216,7 @@ def main():
                 print 'Associated malware count: %s' % (u_results.get(
                                                         'mw_count'))
                 print 'SURBL status: %s' % u_results.get('surbl')
-                print 'Spamhaus DBL Status: %s' % u_results.get('shbl')
+                print 'Spamhaus DBL status: %s' % u_results.get('shbl')
             else:
                 print 'URLHaus status: %s' % urlh
         except ConnectionError:
@@ -250,7 +251,7 @@ def main():
             if fsb == 200:
                 print '*' * 32
                 print 'HybridAnalysis Results:'
-                print 'Associated Malware Count: %d' % u_chck.fsb_mw
+                print 'Associated Sample Count: %d' % u_chck.fsb_mw
             else:
                 print('Unable to successfully connect to HybridAnalysis. ' +
                       'The HTTP error code is: %d\n') % fsb
@@ -269,7 +270,7 @@ def main():
                 print 'SURBL: %s' % u_results.get('surbl')
                 print 'Spamhaus BL: %s' % u_results.get('spamhaus_dbl')
             else:
-                print 'URLHaus Status: %s' % urlh
+                print 'URLHaus status: %s' % urlh
         except ConnectionError:
             print 'Unable to connect to URL Haus due to network problems'
 
