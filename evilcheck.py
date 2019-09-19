@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from coreutils import getConfig, hashFile
 from requests import ConnectionError
+import validate
 import osintchck
 import argparse
 
@@ -29,6 +30,9 @@ def main():
 
     # Looking for IP info.
     if args.ip:
+        if not validate.validateIP(args.indicator):
+            print 'Invalid IP address provided as input.'
+            exit(1)
         ip_chck = osintchck.IPOSINT(args.indicator)
 
         try:
@@ -121,7 +125,11 @@ def main():
 
     # Looking for domain info.
     if args.dns:
+        if not validate.validateDN(args.indicator):
+            print 'Invalid DNS name.  DNS names must be RFC 1035 compliant.'
+            exit(1)
         dns_chck = osintchck.DomainOSINT(args.indicator)
+
         try:
             vt = dns_chck.VTChck(vt_api_key)
             if vt == 200:
@@ -215,6 +223,12 @@ def main():
 
     # Looking for URL related info.
     if args.url:
+        if not validate.validateURL(args.indicator):
+            exit(1)
+        domain = args.indicator.split('/')[2]
+        if not validate.validateDN(domain):
+            print 'Domain name is not compliant with RFC 1035.'
+            exit(1)
         u_chck = osintchck.URLOSINT(args.indicator)
 
         try:
@@ -262,6 +276,7 @@ def main():
     # Looking for file realted info.
     if args.file:
         file_hash = hashFile(args.indicator)
+        print 'The hash we are looking for is below.\n%s' % (file_hash)
         f_chck = osintchck.FileOSINT(file_hash)
 
         try:
@@ -273,7 +288,7 @@ def main():
                     vt_results = f_chck.vt_results
                     print 'AV Vendor Count: %d' % vt_results.get('av_detect')
                     print('Vendor detection percentage: %d' %
-                          vt_results.get('av_percent'))
+                          vt_results.get('av_percentage'))
                 else:
                     print 'Nothing found for the given hash on VirusTotal'
             else:
