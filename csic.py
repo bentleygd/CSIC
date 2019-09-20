@@ -40,18 +40,25 @@ def main():
             if vt == 200:
                 print '*' * 32
                 print 'VT Results:'
-                vt_results = ip_chck.vt_results
-                if 'downloads' in vt_results:
-                    print 'IP Owner: %s' % vt_results.get('owner')
-                    print 'Country: %s' % vt_results.get('country')
-                    print 'Malicious URL count: %d' % vt_results.get('urls')
-                    print 'Malware download count: %d' % (
-                          vt_results.get('downloads')
-                          )
+                if ip_chck.vt_response == 1:
+                    vt_results = ip_chck.vt_results
+                    if 'downloads' in vt_results:
+                        print 'IP Owner: %s' % vt_results.get('owner')
+                        print 'Country: %s' % vt_results.get('country')
+                        print 'Malicious URL count: %d' % (
+                              vt_results.get('urls')
+                              )
+                        print 'Malware download count: %d' % (
+                              vt_results.get('downloads')
+                              )
+                    else:
+                        print 'IP Owner: %s' % vt_results.get('owner')
+                        print 'Country: %s' % vt_results.get('country')
+                        print 'Malicious URL count: %d' % (
+                              vt_results.get('urls')
+                              )
                 else:
-                    print 'IP Owner: %s' % vt_results.get('owner')
-                    print 'Country: %s' % vt_results.get('country')
-                    print 'Malicious URL count: %d' % vt_results.get('urls')
+                    print 'Nothing found on VirusTotal.'
             else:
                 print('Unable to successfully connnect to VirusTotal. ' +
                       'The HTTP error code is %d\n') % vt
@@ -136,29 +143,32 @@ def main():
                 vt_results = dns_chck.vt_results
                 print '*' * 32
                 print 'VT Results:'
-                if 'downloads' in vt_results:
-                    print 'Malware downloads: %d' % (
-                          vt_results.get('downloads')
-                          )
-                    print 'URL Categories: %s' % (
-                          str(vt_results.get('categories'))
-                          )
-                    print 'Subdomains: %s' % (
-                           str(vt_results.get('subdomains'))
-                          )
-                    print 'Malicious URL Count: %d' % (
-                          vt_results.get('url_count')
-                          )
+                if dns_chck.vt_response == 1:
+                    if 'downloads' in vt_results:
+                        print 'Malware downloads: %d' % (
+                              vt_results.get('downloads')
+                              )
+                        print 'URL Categories: %s' % (
+                              str(vt_results.get('categories'))
+                              )
+                        print 'Subdomains: %s' % (
+                              str(vt_results.get('subdomains'))
+                              )
+                        print 'Malicious URL Count: %d' % (
+                              vt_results.get('url_count')
+                              )
+                    else:
+                        print 'URL Categories: %s' % (
+                              str(vt_results.get('categories'))
+                              )
+                        print 'Subdomains: %s' % (
+                              str(vt_results.get('subdomains'))
+                              )
+                        print 'Malicious URL Count: %d' % (
+                              vt_results.get('url_count')
+                              )
                 else:
-                    print 'URL Categories: %s' % (
-                          str(vt_results.get('categories'))
-                          )
-                    print 'Subdomains: %s' % (
-                           str(vt_results.get('subdomains'))
-                          )
-                    print 'Malicious URL Count: %d' % (
-                          vt_results.get('url_count')
-                          )
+                    print 'No results found on VirsuTotal.'
             else:
                 print('Unable to succesfully connect to VirusTotal.  The ' +
                       'HTTP error code is %d\n') % vt
