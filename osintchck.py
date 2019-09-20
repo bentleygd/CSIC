@@ -98,6 +98,7 @@ class IPOSINT:
 class DomainOSINT:
     def __init__(self, domain_name):
         self.domain = domain_name
+        self.vt_response = int()
         self.vt_results = dict()
         self.tc_rc = int()
         self.tc_ips = list()
@@ -113,7 +114,8 @@ class DomainOSINT:
         response = get(url, params=params)
         if response.status_code == 200:
             data = response.json()
-            if data.get('response_code') == 1:
+            self.vt_response = data.get('response_code')
+            if self.vt_response == 1:
                 if 'detected_downloaded_samples' in data:
                     self.vt_results = {
                         'downloads': len(data.get(
