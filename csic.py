@@ -124,6 +124,7 @@ def main():
                 print 'Malicious URL count: %s' % u_results.get('mw_count')
                 print 'SURBL status: %s' % u_results.get('surbl')
                 print 'Spamhaus DBL status: %s' % u_results.get('shbl')
+                print 'Reference URL: %s' % u_results.get('ref_url')
             else:
                 print 'URLHaus status: %s' % urlh
         except ConnectionError:
@@ -229,6 +230,7 @@ def main():
                                                         'mw_count'))
                 print 'SURBL status: %s' % u_results.get('surbl')
                 print 'Spamhaus DBL status: %s' % u_results.get('shbl')
+                print 'Reference URL: %s' % u_results.get('ref_url')
             else:
                 print 'URLHaus status: %s' % urlh
         except ConnectionError:
@@ -254,6 +256,7 @@ def main():
                     print 'Last Scan Date: %s' % v_results.get('scan_date')
                     print('Malicious Detections: %d' %
                           v_results.get('positives'))
+                    print 'Reference URL: %s' % v_results.get('ref_url')
                 else:
                     print 'Nothing found on VirusTotal for this URL.'
             else:
@@ -285,6 +288,7 @@ def main():
                 print 'Google Safe Browsing: %s' % u_results.get('gsb')
                 print 'SURBL: %s' % u_results.get('surbl')
                 print 'Spamhaus BL: %s' % u_results.get('spamhaus_dbl')
+                print 'Reference URL: %s' % u_results.get('ref_url')
             else:
                 print 'URLHaus status: %s' % urlh
         except ConnectionError:
@@ -306,6 +310,7 @@ def main():
                     print 'AV Vendor Count: %d' % vt_results.get('av_detect')
                     print('Vendor detection percentage: %d' %
                           vt_results.get('av_percentage'))
+                    print 'Reference URL: %s' % vt_results.get('ref_url')
                 else:
                     print 'Nothing found for the given hash on VirusTotal'
             else:

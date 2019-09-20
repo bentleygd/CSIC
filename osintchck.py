@@ -90,7 +90,8 @@ class IPOSINT:
             self.uh_results = {
                 'mw_count': response.get('url_count'),
                 'surbl': uh_bl.get('surbl'),
-                'shbl': uh_bl.get('spamhaus_dbl')
+                'shbl': uh_bl.get('spamhaus_dbl'),
+                'ref_url': uh_bl.get('urlhaus_reference')
             }
         return response.get('query_status')
 
@@ -181,7 +182,8 @@ class DomainOSINT:
             self.uh_results = {
                 'mw_count': response.get('url_count'),
                 'surbl': uh_bl.get('surbl'),
-                'shbl': uh_bl.get('spamhaus_dbl')
+                'shbl': uh_bl.get('spamhaus_dbl'),
+                'ref_url': uh_bl.get('urlhaus_reference')
             }
         return response.get('query_status')
 
@@ -205,7 +207,8 @@ class URLOSINT:
             if self.vt_response == 1:
                 self.vc_results = {
                     'scan_date': data.get('scan_date'),
-                    'positives': data.get('positives')
+                    'positives': data.get('positives'),
+                    'ref_url': data.get('permalink')
                 }
         return response.status_code
 
@@ -230,7 +233,8 @@ class URLOSINT:
                 'status': response.get('threat'),
                 'gsb': uh_bl.get('gsb'),
                 'surbl': uh_bl.get('surbl'),
-                'shbl': uh_bl.get('spamhaus_dbl')
+                'shbl': uh_bl.get('spamhaus_dbl'),
+                'ref_url': uh_bl.get('urlhaus_reference')
             }
         return response.get('query_status')
 
@@ -258,7 +262,8 @@ class FileOSINT:
                              , 2) * 100)
                 self.vt_results = {
                     'av_detect': data.get('positives'),
-                    'av_percentage': vt_percent
+                    'av_percentage': vt_percent,
+                    'ref_url': data.get('permalink')
                 }
         return response.status_code
 
