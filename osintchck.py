@@ -6,6 +6,7 @@ class IPOSINT:
     def __init__(self, ip):
         self.ip = ip
         self.vt_results = dict()
+        self.vt_resposne = int()
         self.tc_mw = int()
         self.tm_mw = int()
         self.fsb_mw = int()
@@ -19,19 +20,22 @@ class IPOSINT:
         response = get(url, params=params)
         if response.status_code == 200:
             data = response.json()
-            if 'detected_downloaded_samples' in data:
-                self.vt_results = {
-                    'owner': data.get('as_owner'),
-                    'country': data.get('country'),
-                    'urls': len(data.get('detected_urls')),
-                    'downloads': len(data.get('detected_downloaded_samples'))
-                }
-            else:
-                self.vt_results = {
-                    'owner': data.get('as_owner'),
-                    'country': data.get('country'),
-                    'urls': len(data.get('detected_urls'))
-                }
+            self.vt_response = data.get('response_code')
+            if self.vt_response == 1:
+                if 'detected_downloaded_samples' in data:
+                    self.vt_results = {
+                        'owner': data.get('as_owner'),
+                        'country': data.get('country'),
+                        'urls': len(data.get('detected_urls')),
+                        'downloads': len(data.get(
+                                         'detected_downloaded_samples'))
+                    }
+                else:
+                    self.vt_results = {
+                        'owner': data.get('as_owner'),
+                        'country': data.get('country'),
+                        'urls': len(data.get('detected_urls'))
+                    }
         return response.status_code
 
     def TCChck(self):
