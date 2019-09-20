@@ -6,7 +6,7 @@ class IPOSINT:
     def __init__(self, ip):
         self.ip = ip
         self.vt_results = dict()
-        self.vt_resposne = int()
+        self.vt_response = int()
         self.tc_mw = int()
         self.tm_mw = int()
         self.fsb_mw = int()
