@@ -1,15 +1,14 @@
 #!/usr/bin/python
 from coreutils import getConfig, hashFile, mailSend
 from requests import ConnectionError
+from  argparse import ArgumentParser
 import validate
 import osintchck
-import argparse
 
 
 def main():
     # Setting up an argument parser.
-    a_parse = argparse.ArgumentParser(description='Open Threat Intel ' +
-                                                  'checker.')
+    a_parse = ArgumentParser(description='Open Threat Intel checker.')
     a_parse.add_argument('-I', '--ip', action='store_true',
                          help='Check for IP address info.')
     a_parse.add_argument('-D', '--dns', action='store_true',
@@ -161,19 +160,19 @@ def main():
                 vt_results = dns_chck.vt_results
                 if dns_chck.vt_response == 1:
                     if 'downloads' in vt_results:
-                        vt_mail = ('Malware downloads: %d\n' % (
+                        vt_mail = ('Malware downloads: %d \n' % (
                                    vt_results.get('downloads')) +
-                                   'URL Categories: %s\n' % (
+                                   'URL Categories: %s \n' % (
                                    str(vt_results.get('categories'))) +
-                                   'Subdomains: %s\n' % (
+                                   'Subdomains: %s \n' % (
                                    str(vt_results.get('subdomains'))) +
                                    'Malicious URL Count: %d\n' % (
                                    vt_results.get('url_count'))
                                    )
                     else:
-                        vt_mail = ('URL Categories: %s\n' % (
+                        vt_mail = ('URL Categories: %s \n' % (
                                    str(vt_results.get('categories'))) +
-                                   'Subdomains: %s\n' % (
+                                   'Subdomains: %s \n' % (
                                    str(vt_results.get('subdomains'))) +
                                    'Malicious URL Count: %d\n' % (
                                    vt_results.get('url_count'))
@@ -231,8 +230,8 @@ def main():
                 u_results = dns_chck.uh_results
                 urlh_mail = ('Associated malware count: %s\n' % (
                              u_results.get('mw_count')) +
-                             'SURBL status: %s\n' % u_results.get('surbl') +
-                             'Spamhaus DBL status: %s\n' % (
+                             'SURBL status: %s \n' % u_results.get('surbl') +
+                             'Spamhaus DBL status: %s \n' % (
                              u_results.get('shbl')) +
                              'Reference URL: %s\n' % u_results.get('ref_url')
                              )
