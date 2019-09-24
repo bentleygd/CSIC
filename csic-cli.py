@@ -1,15 +1,14 @@
 #!/usr/bin/python
 from coreutils import getConfig, hashFile
 from requests import ConnectionError
+from argparse import ArgumentParser
 import validate
 import osintchck
-import argparse
 
 
 def main():
     # Setting up an argument parser.
-    a_parse = argparse.ArgumentParser(description='Open Threat Intel ' +
-                                                  'checker.')
+    a_parse = ArgumentParser(description='Open Threat Intel checker.')
     a_parse.add_argument('-I', '--ip', action='store_true',
                          help='Check for IP address info.')
     a_parse.add_argument('-D', '--dns', action='store_true',
