@@ -34,7 +34,7 @@ class getConfig:
         """Gets mail sender"""
         config = open(self.fn, 'r+b')
         for line in config:
-            sender = search(r'MailSender: )(.+)', line)
+            sender = search(r'(MailSender: )(.+)', line)
             if sender:
                 return sender.group(2)
         config.close()
@@ -43,7 +43,7 @@ class getConfig:
         """Gets report recipients"""
         config = open(self.fn, 'r+b')
         for line in config:
-            rcpts = search(r'Recipients: )(.+)', line)
+            rcpts = search(r'(Recipients: )(.+)', line)
             if rcpts:
                 return rcpts.group(2)
         config.close()
@@ -52,13 +52,13 @@ class getConfig:
         """Get a SMTP server name from config"""
         config = open(self.fn, 'r+b')
         for line in config:
-            smtpserver = search(r'SMTP: )(.+)', line)
+            smtpserver = search(r'(SMTP: )(.+)', line)
             if smtpserver:
                 return smtpserver.group(2)
         config.close()
 
 
-def MailSend(mail_sender, mail_recipients, subject, mail_server, mail_body):
+def mailSend(mail_sender, mail_recipients, subject, mail_server, mail_body):
     """Simple function to send mail."""
     # Defining mail properties.
     msg = MIMEText(mail_body)
