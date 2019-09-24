@@ -254,7 +254,7 @@ def main():
                 if u_chck.vt_response == 1:
                     v_results = u_chck.vc_results
                     print 'Last Scan Date: %s' % v_results.get('scan_date')
-                    print('Malicious Detections: %d' %
+                    print('AV Vendor Malicious Detections: %d' %
                           v_results.get('positives'))
                     print 'Reference URL: %s' % v_results.get('ref_url')
                 else:

@@ -276,7 +276,7 @@ def main():
                     v_results = u_chck.vc_results
                     vt_mail = ('Last Scan Date: %s\n' % (
                                v_results.get('scan_date')) +
-                               'Malicious Detections: %d\n' % (
+                               'AV Vendor Malicious Detections: %d\n' % (
                                v_results.get('positives')) +
                                'Reference URL: %s\n' % (
                                v_results.get('ref_url'))
