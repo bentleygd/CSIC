@@ -240,7 +240,7 @@ def main():
                 urlh_mail = 'URLHaus status: %s' % urlh
         except ConnectionError:
             print 'Unable to connect to URLHaus due to network problems.'
-        # Seting the mail message
+        # Setting the mail message
         dns_mail_body = ('Indicator: %s\n' % args.indicator +
                          '*' * 32 + '\n' +
                          'VT Results:\n' +
@@ -317,7 +317,7 @@ def main():
                 urlh_mail = 'URLHaus status: %s' % urlh
         except ConnectionError:
             print 'Unable to connect to URL Haus due to network problems'
-        # Seting the mail message
+        # Setting the mail message
         url_mail_body = ('Indicator: %s\n' % args.indicator +
                          '*' * 32 + '\n' +
                          'VT Results:\n' +
@@ -375,7 +375,7 @@ def main():
         except ConnectionError:
             print('Unable to connect to HybridAnalysis due to network ' +
                   'problems.')
-        # Seting the mail message
+        # Setting the mail message
         file_mail_body = ('Indicator: %s\n' % args.indicator +
                           'File Hash: %s\n' % file_hash +
                           '*' * 32 + '\n' +
