@@ -43,28 +43,28 @@ def main():
                 if ip_chck.vt_response == 1:
                     vt_results = ip_chck.vt_results
                     if 'downloads' in vt_results:
-                        vt_mail =('IP Owner: %s\n' % (
-                                  vt_results.get('owner')) +
-                                  'Country: %s\n' % (
-                                  vt_results.get('country')) +
-                                  'Malicious URL count: %d\n' % (
-                                  vt_results.get('urls')) +
-                                  'Malware download count: %d\n' % (
-                                  vt_results.get('downloads')
-                                  ))
+                        vt_mail = ('IP Owner: %s\n' % (
+                                   vt_results.get('owner')) +
+                                   'Country: %s\n' % (
+                                   vt_results.get('country')) +
+                                   'Malicious URL count: %d\n' % (
+                                   vt_results.get('urls')) +
+                                   'Malware download count: %d\n' % (
+                                   vt_results.get('downloads')
+                                   ))
                     else:
-                        vt_mail =('IP Owner: %s\n' % (
-                                  vt_results.get('owner')) +
-                                  'Country: %s\n' % (
-                                  vt_results.get('country')) +
-                                  'Malicious URL count: %d\n' % (
-                                  vt_results.get('urls')
-                                  ))
+                        vt_mail = ('IP Owner: %s\n' % (
+                                   vt_results.get('owner')) +
+                                   'Country: %s\n' % (
+                                   vt_results.get('country')) +
+                                   'Malicious URL count: %d\n' % (
+                                   vt_results.get('urls')
+                                   ))
                 else:
                     vt_mail = 'Nothing found on VirusTotal.\n'
             else:
                 vt_mail = ('Unable to successfully connnect to VirusTotal. ' +
-                          'The HTTP error code is %d\n') % vt
+                           'The HTTP error code is %d\n') % vt
         except ConnectionError:
             print('Unable to connect to VirusTotal due to network ' +
                   'problems.')
@@ -95,7 +95,7 @@ def main():
                 fsb_mail = 'Associated malware count: %d\n' % ip_chck.fsb_mw
             else:
                 fsb_mail = ('Unable to succesfully connect to Hybrid' +
-                           'Analysis.  The HTTP error code is: %d\n') % (fsb)
+                            'Analysis.  The HTTP error code is: %d\n') % (fsb)
         except ConnectionError:
             print('Unable to connect to Hybrid Analysis due to network ' +
                   'problems.')
@@ -114,13 +114,13 @@ def main():
             urlh = ip_chck.UHChck()
             if urlh == 'ok':
                 u_results = ip_chck.uh_results
-                urlh_mail =('Malicious URL count: %s\n' % (
-                            u_results.get('mw_count')) +
-                            'SURBL status: %s\n' % u_results.get('surbl') +
-                            'Spamhaus DBL status: %s\n' % (
-                            u_results.get('shbl')) +
-                            'Reference URL: %s\n' % u_results.get('ref_url')
-                            )
+                urlh_mail = ('Malicious URL count: %s\n' % (
+                             u_results.get('mw_count')) +
+                             'SURBL status: %s\n' % u_results.get('surbl') +
+                             'Spamhaus DBL status: %s\n' % (
+                             u_results.get('shbl')) +
+                             'Reference URL: %s\n' % u_results.get('ref_url')
+                             )
             else:
                 urlh_mail = 'URLHaus status: %s' % urlh
         except ConnectionError:
@@ -191,7 +191,7 @@ def main():
             if tc == 200:
                 tc_mail = 'Resolve count: %d\n' % (dns_chck.tc_rc)
                 for entry in dns_chck.tc_ips:
-                    tc_mail = tc_mail +  'IP: %s Resolved Date: %s\n' % (
+                    tc_mail = tc_mail + 'IP: %s Resolved Date: %s\n' % (
                               entry.get('ip_address'),
                               entry.get('r_time')
                               )
@@ -215,9 +215,9 @@ def main():
             if fsb == 200:
                 fsb_mail = 'Related sample count: %d\n' % dns_chck.fsb_mw
                 if dns_chck.fsb_mw > 0:
-                    fsb_mail = (fsb_mail + 
-                               ('Average sample threat score: %d\n' %
-                               dns_chck.fsb_ts_avg))
+                    fsb_mail = (fsb_mail +
+                                ('Average sample threat score: %d\n' %
+                                 dns_chck.fsb_ts_avg))
             else:
                 fsb_mail = ('Unable to succesfully connect to Hybrid ' +
                             'Analysis. The HTTP error code is %d\n') % fsb
@@ -292,7 +292,7 @@ def main():
         try:
             fsb = u_chck.FSBChck(fsb_api_key)
             if fsb == 200:
-                fsb_mail =  'Associated Sample Count: %d\n' % u_chck.fsb_mw
+                fsb_mail = 'Associated Sample Count: %d\n' % u_chck.fsb_mw
             else:
                 fsb_mail = ('Unable to successfully connect to Hybrid ' +
                             ' Analysis.  The HTTP error code is: %d\n') % fsb
@@ -330,7 +330,7 @@ def main():
                          urlh_mail)
         # Sending the mail message.
         mailSend(sender, rcpts, 'CSIC URL Info', smtp_server, url_mail_body)
-    
+
     # Looking for file realted info.
     if args.file:
         file_hash = hashFile(args.indicator)
