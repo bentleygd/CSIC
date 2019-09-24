@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from coreutils import getConfig, hashFile, mailSend
 from requests import ConnectionError
-from  argparse import ArgumentParser
+from argparse import ArgumentParser
 import validate
 import osintchck
 
