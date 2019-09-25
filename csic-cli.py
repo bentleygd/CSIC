@@ -50,7 +50,7 @@ def main():
                         print 'Malware download count: %d' % (
                               vt_results.get('downloads')
                               )
-                        print('Reference URL: ' + 
+                        print('Reference URL: ' +
                               'https://virustotal.com/gui/ip-address/' +
                               args.indicator +
                               '/details')

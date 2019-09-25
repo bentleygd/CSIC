@@ -60,7 +60,7 @@ def main():
                                    'Country: %s\n' % (
                                    vt_results.get('country')) +
                                    'Malicious URL count: %d\n' % (
-                                   vt_results.get('urls')) + 
+                                   vt_results.get('urls')) +
                                    'Reference URL: ' +
                                    'https://virustotal.com/gui/ip-address/' +
                                    args.indicator + '/details'
