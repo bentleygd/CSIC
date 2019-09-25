@@ -49,16 +49,22 @@ def main():
                                    'Malicious URL count: %d\n' % (
                                    vt_results.get('urls')) +
                                    'Malware download count: %d\n' % (
-                                   vt_results.get('downloads')
-                                   ))
+                                   vt_results.get('downloads')) +
+                                   'Reference URL: ' +
+                                   'https://virustotal.com/gui/ip-address/' +
+                                   args.indicator + '/details'
+                                   )
                     else:
                         vt_mail = ('IP Owner: %s\n' % (
                                    vt_results.get('owner')) +
                                    'Country: %s\n' % (
                                    vt_results.get('country')) +
                                    'Malicious URL count: %d\n' % (
-                                   vt_results.get('urls')
-                                   ))
+                                   vt_results.get('urls')) + 
+                                   'Reference URL: ' +
+                                   'https://virustotal.com/gui/ip-address/' +
+                                   args.indicator + '/details'
+                                   )
                 else:
                     vt_mail = 'Nothing found on VirusTotal.\n'
             else:
@@ -167,7 +173,10 @@ def main():
                                    'Subdomains: %s \n' % (
                                    str(vt_results.get('subdomains'))) +
                                    'Malicious URL Count: %d\n' % (
-                                   vt_results.get('url_count'))
+                                   vt_results.get('url_count')) +
+                                   'Reference URL: ' +
+                                   'https://virustotal.com/gui/domain/' +
+                                   args.indicator + '/details'
                                    )
                     else:
                         vt_mail = ('URL Categories: %s \n' % (
@@ -175,7 +184,10 @@ def main():
                                    'Subdomains: %s \n' % (
                                    str(vt_results.get('subdomains'))) +
                                    'Malicious URL Count: %d\n' % (
-                                   vt_results.get('url_count'))
+                                   vt_results.get('url_count')) +
+                                   'Reference URL: ' +
+                                   'https://virustotal.com/gui/domain/' +
+                                   args.indicator + '/details'
                                    )
                 else:
                     vt_mail = 'No results found on VirsuTotal.\n'
