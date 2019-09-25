@@ -91,6 +91,8 @@ def main():
             print 'ThreatMiner Results:'
             if tm == 200:
                 print 'Associated malware count: %d' % ip_chck.tm_mw
+            elif tm == 408:
+                print 'Request timed out'
             else:
                 print 'No results found on ThreatMiner.'
         except ConnectionError:
@@ -214,6 +216,8 @@ def main():
             print 'ThreatMiner Results'
             if tm == 200:
                 print 'Associated malware count: %d' % dns_chck.tm_mw
+            elif tm == 408:
+                print 'Request timed out.'
             else:
                 print 'No results found on ThreatMiner.'
         except ConnectionError:

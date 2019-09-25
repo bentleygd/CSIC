@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from requests import get, post
+from requests import get, post, ReadTimeout
 
 
 class IPOSINT:
@@ -54,9 +54,14 @@ class IPOSINT:
         """Checks ThreatMiner for info for a given IP."""
         url = 'https://api.threatminer.org/v2/host.php'
         params = {'q': self.ip, 'rt': '4'}
-        data = get(url, params=params).json()
-        if data.get('status_code') == '200':
-            self.tm_mw = len(data.get('results'))
+        try:
+            data = get(url, params=params, timeout=3).json()
+            if data.get('status_code') == '200':
+                self.tm_mw = len(data.get('results'))
+        except ReadTimeout:
+            print 'Request timed out after 3 seconds'
+            status_code = 408
+            return status_code
         return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
@@ -152,9 +157,13 @@ class DomainOSINT:
         """Checks ThreatMiner for info for a given domain."""
         url = 'https://api.threatminer.org/v2/domain.php'
         params = {'q': self.domain, 'rt': '4'}
-        data = get(url, params=params).json()
-        if data.get('status_code') == '200':
-            self.tm_mw = len(data.get('results'))
+        try:
+            data = get(url, params=params, timeout=3).json()
+            if data.get('status_code') == '200':
+                self.tm_mw = len(data.get('results'))
+        except ReadTimeout:
+            status_code = 408
+            return status_code
         return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):

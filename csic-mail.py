@@ -88,6 +88,8 @@ def main():
             tm = ip_chck.TMChck()
             if tm == 200:
                 tm_mail = 'Associated malware count: %d\n' % ip_chck.tm_mw
+            elif tm == 408:
+                print 'Request timed out.'
             else:
                 tm_mail = 'No results found on ThreatMiner.\n'
         except ConnectionError:
@@ -216,6 +218,8 @@ def main():
             tm = dns_chck.TMChck()
             if tm == 200:
                 tm_mail = 'Associated malware count: %d\n' % dns_chck.tm_mw
+            elif tm == 408:
+                print 'Request tiimed out.'
             else:
                 tm_mail = 'No results found on ThreatMiner.\n'
         except ConnectionError:
