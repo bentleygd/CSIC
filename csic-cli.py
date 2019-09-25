@@ -50,12 +50,20 @@ def main():
                         print 'Malware download count: %d' % (
                               vt_results.get('downloads')
                               )
+                        print('Reference URL: ' +
+                              'https://virustotal.com/gui/ip-address/' +
+                              args.indicator +
+                              '/details')
                     else:
                         print 'IP Owner: %s' % vt_results.get('owner')
                         print 'Country: %s' % vt_results.get('country')
                         print 'Malicious URL count: %d' % (
                               vt_results.get('urls')
                               )
+                        print('Reference URL: ' +
+                              'https://virustotal.com/gui/ip-address/' +
+                              args.indicator +
+                              '/details')
                 else:
                     print 'Nothing found on VirusTotal.'
             else:
@@ -157,6 +165,10 @@ def main():
                         print 'Malicious URL Count: %d' % (
                               vt_results.get('url_count')
                               )
+                        print('Refernce URL: ' +
+                              'https://virustotal.com/gui/domain/' +
+                              args.indicator +
+                              '/details')
                     else:
                         print 'URL Categories: %s' % (
                               str(vt_results.get('categories'))
@@ -167,6 +179,10 @@ def main():
                         print 'Malicious URL Count: %d' % (
                               vt_results.get('url_count')
                               )
+                        print('Refernce URL: ' +
+                              'https://virustotal.com/gui/domain/' +
+                              args.indicator +
+                              '/details')
                 else:
                     print 'No results found on VirsuTotal.'
             else:
