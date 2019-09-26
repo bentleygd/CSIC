@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from requests import get, post, ReadTimeout
+from requests import get, post, ReadTimeout, HTTPError
 
 
 class IPOSINT:
@@ -55,11 +55,16 @@ class IPOSINT:
         url = 'https://api.threatminer.org/v2/host.php'
         params = {'q': self.ip, 'rt': '4'}
         try:
-            data = get(url, params=params, timeout=3).json()
-            if data.get('status_code') == '200':
+            response = get(url, params=params, timeout=3)
+            response.raise_for_status()
+            data = response.json()
+            if (response.status_code == 200 and 
+                data.get('status_code') == '200'):
                 self.tm_mw = len(data.get('results'))
+        except HTTPError:
+            status_code = 500
+            return status_code
         except ReadTimeout:
-            print 'Request timed out after 3 seconds'
             status_code = 408
             return status_code
         return int(data.get('status_code'))
@@ -158,9 +163,15 @@ class DomainOSINT:
         url = 'https://api.threatminer.org/v2/domain.php'
         params = {'q': self.domain, 'rt': '4'}
         try:
-            data = get(url, params=params, timeout=3).json()
-            if data.get('status_code') == '200':
+            response = get(url, params=params, timeout=3).json()
+            response.raise_for_status()
+            data = response.json()
+            if (repsonse.status_code == 200 and 
+                data.get('status_code') == '200'):
                 self.tm_mw = len(data.get('results'))
+        except HTTPError:
+            status_code = 500
+            return status_code
         except ReadTimeout:
             status_code = 408
             return status_code
