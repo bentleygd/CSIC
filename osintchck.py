@@ -58,11 +58,11 @@ class IPOSINT:
             response = get(url, params=params, timeout=3)
             response.raise_for_status()
             data = response.json()
-            if (response.status_code == 200 and 
+            if (response.status_code == 200 and
                 data.get('status_code') == '200'):
-                self.tm_mw = len(data.get('results'))
+                    self.tm_mw = len(data.get('results'))
         except HTTPError:
-            status_code = 500
+            status_code = response.status_code
             return status_code
         except ReadTimeout:
             status_code = 408
@@ -166,11 +166,11 @@ class DomainOSINT:
             response = get(url, params=params, timeout=3).json()
             response.raise_for_status()
             data = response.json()
-            if (repsonse.status_code == 200 and 
+            if (response.status_code == 200 and
                 data.get('status_code') == '200'):
-                self.tm_mw = len(data.get('results'))
+                    self.tm_mw = len(data.get('results'))
         except HTTPError:
-            status_code = 500
+            status_code = response.status_code
             return status_code
         except ReadTimeout:
             status_code = 408

@@ -90,10 +90,9 @@ def main():
                 tm_mail = 'Associated malware count: %d\n' % ip_chck.tm_mw
             elif tm == 408:
                 tm_mail = 'Request timed out.\n'
-            elif tm == 500:
-                tm_mail = 'Received HTTP 500 error.\n'
             else:
-                tm_mail = 'No results found on ThreatMiner.\n'
+                tm_mail = ('HTTP response code: %d' +
+                           'No results found on ThreatMiner.\n') % tm
         except ConnectionError:
             print('Unable to connect to ThreatMiner due to network ' +
                   'problems.')
@@ -140,7 +139,7 @@ def main():
                         '*' * 32 + '\n' +
                         'VT Results:\n' +
                         vt_mail +
-                         '*' * 32 + '\n' +
+                        '*' * 32 + '\n' +
                         'Threat Crowd Results:\n' +
                         tc_mail +
                         '*' * 32 + '\n' +
@@ -225,7 +224,8 @@ def main():
             elif tm == 500:
                 print 'Received HTTP 500 error.'
             else:
-                tm_mail = 'No results found on ThreatMiner.\n'
+                tm_mail = ('HTTP respone code: %d' +
+                           'No results found on ThreatMiner.\n') % tm
         except ConnectionError:
             print 'Unable to connect to ThreatMiner due to network problems.'
 
