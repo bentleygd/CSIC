@@ -163,7 +163,7 @@ class DomainOSINT:
         url = 'https://api.threatminer.org/v2/domain.php'
         params = {'q': self.domain, 'rt': '4'}
         try:
-            response = get(url, params=params, timeout=3).json()
+            response = get(url, params=params, timeout=3)
             response.raise_for_status()
             data = response.json()
             if (response.status_code == 200 and
