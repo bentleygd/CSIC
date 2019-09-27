@@ -52,7 +52,7 @@ def main():
                                    vt_results.get('downloads')) +
                                    'Reference URL: ' +
                                    'https://virustotal.com/gui/ip-address/' +
-                                   args.indicator + '/details'
+                                   args.indicator + '/details' + '\n'
                                    )
                     else:
                         vt_mail = ('IP Owner: %s\n' % (
@@ -63,7 +63,7 @@ def main():
                                    vt_results.get('urls')) +
                                    'Reference URL: ' +
                                    'https://virustotal.com/gui/ip-address/' +
-                                   args.indicator + '/details'
+                                   args.indicator + '/details' + '\n'
                                    )
                 else:
                     vt_mail = 'Nothing found on VirusTotal.\n'
@@ -88,8 +88,11 @@ def main():
             tm = ip_chck.TMChck()
             if tm == 200:
                 tm_mail = 'Associated malware count: %d\n' % ip_chck.tm_mw
+            elif tm == 408:
+                tm_mail = 'Request timed out.\n'
             else:
-                tm_mail = 'No results found on ThreatMiner.\n'
+                tm_mail = ('HTTP response code: %d' +
+                           'No results found on ThreatMiner.\n') % tm
         except ConnectionError:
             print('Unable to connect to ThreatMiner due to network ' +
                   'problems.')
@@ -176,7 +179,7 @@ def main():
                                    vt_results.get('url_count')) +
                                    'Reference URL: ' +
                                    'https://virustotal.com/gui/domain/' +
-                                   args.indicator + '/details'
+                                   args.indicator + '/details' + '\n'
                                    )
                     else:
                         vt_mail = ('URL Categories: %s \n' % (
@@ -187,7 +190,7 @@ def main():
                                    vt_results.get('url_count')) +
                                    'Reference URL: ' +
                                    'https://virustotal.com/gui/domain/' +
-                                   args.indicator + '/details'
+                                   args.indicator + '/details' + '\n'
                                    )
                 else:
                     vt_mail = 'No results found on VirsuTotal.\n'
@@ -216,8 +219,13 @@ def main():
             tm = dns_chck.TMChck()
             if tm == 200:
                 tm_mail = 'Associated malware count: %d\n' % dns_chck.tm_mw
+            elif tm == 408:
+                print 'Request tiimed out.'
+            elif tm == 500:
+                print 'Received HTTP 500 error.'
             else:
-                tm_mail = 'No results found on ThreatMiner.\n'
+                tm_mail = ('HTTP respone code: %d' +
+                           'No results found on ThreatMiner.\n') % tm
         except ConnectionError:
             print 'Unable to connect to ThreatMiner due to network problems.'
 

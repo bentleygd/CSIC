@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from requests import get, post
+from requests import get, post, ReadTimeout, HTTPError
 
 
 class IPOSINT:
@@ -54,9 +54,19 @@ class IPOSINT:
         """Checks ThreatMiner for info for a given IP."""
         url = 'https://api.threatminer.org/v2/host.php'
         params = {'q': self.ip, 'rt': '4'}
-        data = get(url, params=params).json()
-        if data.get('status_code') == '200':
-            self.tm_mw = len(data.get('results'))
+        try:
+            response = get(url, params=params, timeout=3)
+            response.raise_for_status()
+            data = response.json()
+            if (response.status_code == 200 and
+                data.get('status_code') == '200'):
+                    self.tm_mw = len(data.get('results'))
+        except HTTPError:
+            status_code = response.status_code
+            return status_code
+        except ReadTimeout:
+            status_code = 408
+            return status_code
         return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
@@ -152,9 +162,19 @@ class DomainOSINT:
         """Checks ThreatMiner for info for a given domain."""
         url = 'https://api.threatminer.org/v2/domain.php'
         params = {'q': self.domain, 'rt': '4'}
-        data = get(url, params=params).json()
-        if data.get('status_code') == '200':
-            self.tm_mw = len(data.get('results'))
+        try:
+            response = get(url, params=params, timeout=3)
+            response.raise_for_status()
+            data = response.json()
+            if (response.status_code == 200 and
+                data.get('status_code') == '200'):
+                    self.tm_mw = len(data.get('results'))
+        except HTTPError:
+            status_code = response.status_code
+            return status_code
+        except ReadTimeout:
+            status_code = 408
+            return status_code
         return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
