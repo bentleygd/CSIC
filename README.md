@@ -1,2 +1,2 @@
-# OSINTChck
-Python scripts that automate checking different OSINT feeds to determine if something is evil.
+# CSIChck
+Python scripts that automate checking different crowd-source threat intelligence feeds to determine if something is evil.
