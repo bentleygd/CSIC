@@ -1,9 +1,11 @@
-#!/usr/bin/python
-from coreutils import getConfig, hashFile, mailSend
-from requests import ConnectionError
+#!/usr/bin/python3
 from argparse import ArgumentParser
-import validate
-import osintchck
+
+from requests import ConnectionError
+
+from libs.coreutils import get_config, hash_file, mail_send
+from libs import validate
+from libs import osintchck
 
 
 def main():
@@ -22,7 +24,7 @@ def main():
     args = a_parse.parse_args()
 
     # Setting the configuration.
-    config = getConfig('config.cnf')
+    config = get_config('config.cnf')
     # Specifying API keys.
     vt_api_key = config.VTAPI()
     fsb_api_key = config.FSBAPI()
@@ -155,7 +157,7 @@ def main():
                         'URLHaus Results:\n' +
                         urlh_mail)
         # Sending the mail message
-        mailSend(sender, rcpts, 'CSIC IP Info', smtp_server, ip_mail_body)
+        mail_send(sender, rcpts, 'CSIC IP Info', smtp_server, ip_mail_body)
 
     # Looking for domain info.
     if args.dns:
@@ -198,7 +200,7 @@ def main():
                 vt_mail = ('Unable to succesfully connect to VirusTotal. ' +
                            'The HTTP error code is %d\n') % vt
         except ConnectionError:
-            print 'Unable to connect to VirusTotal due to network problems.'
+            print('Unable to connect to VirusTotal due to network problems.')
 
         try:
             tc = dns_chck.TCChck()
@@ -220,14 +222,14 @@ def main():
             if tm == 200:
                 tm_mail = 'Associated malware count: %d\n' % dns_chck.tm_mw
             elif tm == 408:
-                print 'Request tiimed out.'
+                print('Request tiimed out.')
             elif tm == 500:
-                print 'Received HTTP 500 error.'
+                print('Received HTTP 500 error.')
             else:
                 tm_mail = ('HTTP respone code: %d' +
                            'No results found on ThreatMiner.\n') % tm
         except ConnectionError:
-            print 'Unable to connect to ThreatMiner due to network problems.'
+            print('Unable to connect to ThreatMiner due to network problems.')
 
         try:
             fsb = dns_chck.FSBChck(fsb_api_key)
@@ -258,7 +260,7 @@ def main():
             else:
                 urlh_mail = 'URLHaus status: %s' % urlh
         except ConnectionError:
-            print 'Unable to connect to URLHaus due to network problems.'
+            print('Unable to connect to URLHaus due to network problems.')
         # Setting the mail message
         dns_mail_body = ('Indicator: %s\n' % args.indicator +
                          '*' * 32 + '\n' +
@@ -277,7 +279,7 @@ def main():
                          'URLHaus Results:\n' +
                          urlh_mail)
         # Sending the mail message.
-        mailSend(sender, rcpts, 'CSIC DNS Info', smtp_server, dns_mail_body)
+        mail_send(sender, rcpts, 'CSIC DNS Info', smtp_server, dns_mail_body)
 
     # Looking for URL related info.
     if args.url:
@@ -306,7 +308,7 @@ def main():
                 vt_mail = ('Unable to succesfully connect to VirusTotal. ' +
                            'HTTP error code is %d\n') % vt
         except ConnectionError:
-            print 'Unable to connect to VirusTotal due to network problems.'
+            print('Unable to connect to VirusTotal due to network problems.')
 
         try:
             fsb = u_chck.FSBChck(fsb_api_key)
@@ -335,7 +337,7 @@ def main():
             else:
                 urlh_mail = 'URLHaus status: %s' % urlh
         except ConnectionError:
-            print 'Unable to connect to URL Haus due to network problems'
+            print('Unable to connect to URL Haus due to network problems.')
         # Setting the mail message
         url_mail_body = ('Indicator: %s\n' % args.indicator +
                          '*' * 32 + '\n' +
@@ -348,11 +350,11 @@ def main():
                          'URLHaus Results:\n' +
                          urlh_mail)
         # Sending the mail message.
-        mailSend(sender, rcpts, 'CSIC URL Info', smtp_server, url_mail_body)
+        mail_send(sender, rcpts, 'CSIC URL Info', smtp_server, url_mail_body)
 
     # Looking for file realted info.
     if args.file:
-        file_hash = hashFile(args.indicator)
+        file_hash = hash_file(args.indicator)
         f_chck = osintchck.FileOSINT(file_hash)
 
         try:
@@ -373,7 +375,7 @@ def main():
                 vt_mail = ('Unable to succsefully connect to Virus Total. ' +
                            'The HTTP error code is %d\n' % vt)
         except ConnectionError:
-            print 'Unable to connect to VirusTotal due to network problems.'
+            print('Unable to connect to VirusTotal due to network problems.')
 
         try:
             fsb = f_chck.FSBChck(fsb_api_key)
@@ -404,7 +406,7 @@ def main():
                           'FalconSandBox Results:\n' +
                           fsb_mail)
         # Sending the mail message.
-        mailSend(sender, rcpts, 'CSIC File Info', smtp_server, file_mail_body)
+        mail_send(sender, rcpts, 'CSIC File Info', smtp_server, file_mail_body)
 
 
 if __name__ == '__main__':

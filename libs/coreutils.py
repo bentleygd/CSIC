@@ -4,10 +4,11 @@ from re import search
 from os.path import exists
 from hashlib import sha256
 from smtplib import SMTP
-from urllib2 import URLError, HTTPError, urlopen
+from urllib.error import URLError, HTTPError
+from urllib.request import urlopen
 
 
-class getConfig:
+class get_config:
     """A configuration class"""
     def __init__(self, file_location):
         self.fn = file_location
@@ -58,7 +59,7 @@ class getConfig:
         config.close()
 
 
-def mailSend(mail_sender, mail_recipients, subject, mail_server, mail_body):
+def mail_send(mail_sender, mail_recipients, subject, mail_server, mail_body):
     """Simple function to send mail."""
     # Defining mail properties.
     msg = MIMEText(mail_body)
@@ -76,20 +77,20 @@ def testURL(url):
     """Tests if connectivity to a URL is successful or not."""
     input_test = search(r'(^https:|^http:)(.+)', url)
     if not input_test.group(1):
-        print r'URL provided does not begin with http(s).'
+        print(r'URL provided does not begin with http(s).')
         exit(1)
     try:
         test = urlopen(url)
         if test.getcode() == 200:
-            print 'The connection to %s was successful.' % (url)
+            print('The connection to %s was successful.' % (url))
     except HTTPError as herror:
         print('Unable to connect to %s.\nHTTP Status Code: %s\n' +
               'Reason: %s') % (url, herror.code, herror.reason)
     except URLError as uerror:
-        print 'Unable to connect to %s\nReason: %s\n' % (url, uerror.reason)
+        print('Unable to connect to %s\nReason: %s\n' % (url, uerror.reason))
 
 
-def hashFile(filename):
+def hash_file(filename):
     """Takes a file and hashes the contents."""
     try:
         if exists(filename):
@@ -97,7 +98,7 @@ def hashFile(filename):
         else:
             raise IOError
     except IOError:
-        print 'The file specified does not exist.  Aborting.'
+        print('The file specified does not exist.  Aborting.')
         exit(1)
     file_hash = sha256(hashed_file.read()).hexdigest()
     return file_hash
