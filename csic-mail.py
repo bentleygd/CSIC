@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 from argparse import ArgumentParser
+from configparser import ConfigParser
 
 from requests import ConnectionError
 
-from libs.coreutils import get_config, hash_file, mail_send
+from libs.coreutils import hash_file, mail_send
 from libs import validate
 from libs import osintchck
 
@@ -24,13 +25,14 @@ def main():
     args = a_parse.parse_args()
 
     # Setting the configuration.
-    config = get_config('config.cnf')
+    config = ConfigParser()
+    config.read('config.cnf')
     # Specifying API keys.
-    vt_api_key = config.VTAPI()
-    fsb_api_key = config.FSBAPI()
-    smtp_server = config.GetSMTPServer()
-    rcpts = config.GetReportRcpts()
-    sender = config.GetMailSender()
+    vt_api_key = config['VT']['api']
+    fsb_api_key = config['FSB']['api']
+    smtp_server = config['mail']['server']
+    rcpts = config['mail']['rcpts']
+    sender = config['mail']['sender']
 
     # Looking for IP info.
     if args.ip:

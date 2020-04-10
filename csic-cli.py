@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
+from configparser import ConfigParser
 
 from requests import ConnectionError
 
-from libs.coreutils import get_config, hash_file
+from libs.coreutils import hash_file
 from libs import validate
 from libs import osintchck
 
@@ -23,10 +24,12 @@ def main():
     args = a_parse.parse_args()
 
     # Setting the configuration.
-    config = get_config('config.cnf')
+    config = ConfigParser()
+    config.read('config.cnf')
+    # config = get_config('config.cnf')
     # Specifying API keys.
-    vt_api_key = config.VTAPI()
-    fsb_api_key = config.FSBAPI()
+    vt_api_key = config['VT']['api']
+    fsb_api_key = config['FSB']['api']
 
     # Looking for IP info.
     if args.ip:

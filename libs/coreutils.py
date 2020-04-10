@@ -8,57 +8,6 @@ from urllib.error import URLError, HTTPError
 from urllib.request import urlopen
 
 
-class get_config:
-    """A configuration class"""
-    def __init__(self, file_location):
-        self.fn = file_location
-
-    def VTAPI(self):
-        """Get the VirusTotal API Key"""
-        config = open(self.fn, 'r+b')
-        for line in config:
-            vt_api_key = search(r'(^VT_API: )(.+)', line)
-            if vt_api_key:
-                return vt_api_key.group(2)
-        config.close()
-
-    def FSBAPI(self):
-        """Gets Falcon Sandbox API Key"""
-        config = open(self.fn, 'r+b')
-        for line in config:
-            fsb_api_key = search(r'(^FSB_API: )(.+)', line)
-            if fsb_api_key:
-                return fsb_api_key.group(2)
-        config.close()
-
-    def GetMailSender(self):
-        """Gets mail sender"""
-        config = open(self.fn, 'r+b')
-        for line in config:
-            sender = search(r'(MailSender: )(.+)', line)
-            if sender:
-                return sender.group(2)
-        config.close()
-
-    def GetReportRcpts(self):
-        """Gets report recipients"""
-        config = open(self.fn, 'r+b')
-        for line in config:
-            rcpts = search(r'(Recipients: )(.+)', line)
-            if rcpts:
-                return rcpts.group(2)
-        config.close()
-
-    def GetSMTPServer(self):
-        """Get a SMTP server name from config"""
-        config = open(self.fn, 'r+b')
-        for line in config:
-            smtpserver = search(r'(SMTP: )(.+)', line)
-            if smtpserver:
-                return smtpserver.group(2)
-        config.close()
-
-
 def mail_send(mail_sender, mail_recipients, subject, mail_server, mail_body):
     """Simple function to send mail."""
     # Defining mail properties.
