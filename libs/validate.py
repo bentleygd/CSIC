@@ -1,4 +1,3 @@
-#!/usr/bin/py
 from re import match
 
 
@@ -6,14 +5,7 @@ def validateIP(IP):
     """Takes a string input and returns true if it is a valid IP."""
     valid_ip = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
     if match(valid_ip, IP):
-        octets = IP.split('.')
-        if (int(octets[0]) <= 223 and
-                int(octets[1]) <= 255 and
-                int(octets[2]) <= 255 and
-                int(octets[3]) <= 254):
-            return True
-        else:
-            return False
+        return True
     else:
         return False
 
@@ -43,9 +35,9 @@ def validateURL(url):
     # Checking for recommend maximum length.
     if not len(url) > 2048:
         if not match(r'https:|http:', url):
-            print 'URL is not a HTTP scheme.'
+            print('URL is not a HTTP scheme.')
             return False
         return True
     else:
-        print 'URL lenght exceeds browser maximum length.'
+        print('URL lenght exceeds browser maximum length.')
         return False
