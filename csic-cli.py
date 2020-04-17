@@ -28,8 +28,8 @@ def main():
     config.read('config.cnf')
     # config = get_config('config.cnf')
     # Specifying API keys.
-    vt_api_key = config['VT']['api']
-    fsb_api_key = config['FSB']['api']
+    vt_api_key = config['API']['vt']
+    fsb_api_key = config['API']['fsb']
 
     # Looking for IP info.
     if args.ip:
