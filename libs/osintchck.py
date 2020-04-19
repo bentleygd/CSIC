@@ -461,6 +461,7 @@ class URLOSINT:
         vt_results - The results returned by the VirusTotal API.
         fsb_mw - The count of associated malware according to Hybrid Analysis.
         uh_results - The results returned by URLHaus.
+        log - logging call.
 
         Methods:
         VTChck - Checks VirusTotal for info about a givne URL.
@@ -473,6 +474,7 @@ class URLOSINT:
         self.vc_results = dict()
         self.fsb_mw = int()
         self.uh_results = dict()
+        self.log = getLogger('csic')
 
     def VTChck(self, vt_api):
         """Checks VirusTotal for info for a given URL.
@@ -488,6 +490,10 @@ class URLOSINT:
         params = {'apikey': vt_api, 'resource': self.b_url}
         response = get(url, params=params)
         if response.status_code == 200:
+            self.log.info(
+                'Successfully retrieved data for %s from VirusTotal',
+                self.b_url
+            )
             data = response.json()
             self.vt_response = data.get('response_code')
             if self.vt_response == 1:
@@ -496,6 +502,11 @@ class URLOSINT:
                     'positives': data.get('positives'),
                     'ref_url': data.get('permalink')
                 }
+        else:
+            self.log.error(
+                'Unable to retrieve data for %s from VirusTotal. The HTTP ' +
+                'response code is %s.', (self.b_url, response.status_code)
+            )
         return response.status_code
 
     def FSBChck(self, fsb_api):
@@ -514,7 +525,18 @@ class URLOSINT:
         data = {'url': self.b_url}
         response = post(url, headers=headers, data=data)
         if response.status_code == 200:
+            self.log.info(
+                'Successfully retrieved info from hybrid analysis for %s',
+                self.b_url
+            )
             self.fsb_mw = response.json().get('count')
+        else:
+            self.log.error(
+                'Unable to retrieve info from hybrid analysis for %s. The ' +
+                'HTTP response code is %s.', (
+                    self.b_url, response.status_code
+                )
+            )
         return response.status_code
 
     def UHChck(self):
@@ -529,6 +551,9 @@ class URLOSINT:
         data = {'url': self.b_url}
         response = post(url, data=data).json()
         if response.get('query_status') == 'ok':
+            self.log.info(
+                'Successfully retrieved info for %s from abuse.ch', self.b_url
+            )
             uh_bl = response.get('blacklists')
             self.uh_results = {
                 'status': response.get('threat'),
@@ -537,6 +562,11 @@ class URLOSINT:
                 'shbl': uh_bl.get('spamhaus_dbl'),
                 'ref_url': uh_bl.get('urlhaus_reference')
             }
+        else:
+            self.log.error(
+                'Unable to retrieve data for %s from abuse.ch. The query ' +
+                'response is %s.', (self.b_url, response.get('query_status'))
+            )
         return response.get('query_status')
 
 
@@ -554,6 +584,7 @@ class FileOSINT:
         fsb_r_code - The FalconSandbox response code.
         fsb_results - The results returned by FalconSandbox regarding a
         given file hash.
+        log - Logging call.
 
         Methods:
         VTChck - Checks VirusTotal for info regarding a given file
@@ -565,6 +596,7 @@ class FileOSINT:
         self.vt_results = dict()
         self.fsb_r_code = int()
         self.fsb_results = dict()
+        self.log = getLogger('csic')
 
     def VTChck(self, vt_api):
         """Checks VirusTotal for info for a given file hash.
@@ -581,6 +613,10 @@ class FileOSINT:
         params = {'apikey': vt_api, 'resource': self.hash}
         response = get(url, params=params)
         if response.status_code == 200:
+            self.log.info(
+                'Successfully retrieved info from VT for file hash: %s',
+                self.hash
+            )
             data = response.json()
             self.vt_response = data.get('response_code')
             if self.vt_response == 1:
@@ -593,6 +629,10 @@ class FileOSINT:
                     'av_percentage': vt_percent,
                     'ref_url': data.get('permalink')
                 }
+        else:
+            self.log.error(
+                'Unable to retrieve info from VT for %s', self.hash
+            )
         return response.status_code
 
     def FSBChck(self, fsb_api):
@@ -611,6 +651,10 @@ class FileOSINT:
         data = {'hash': self.hash}
         response = post(url, headers=headers, data=data)
         if response.status_code == 200:
+            self.log.info(
+                'Successfully retrieved info from hybrid analysis for '
+                'hash: %s', self.hash
+            )
             if len(response.json()) > 0:
                 self.fsb_r_code = 1
                 self.fsb_results = {
@@ -619,6 +663,11 @@ class FileOSINT:
                 }
             else:
                 self.fsb_r_code = 0
+        else:
+            self.log.error(
+                'Unable to retrieve file info from hybrid analysis for %s',
+                self.hash
+            )
         return response.status_code
 
 
@@ -642,6 +691,7 @@ class OSINTBlock():
         hours.
         nt_ssh_bl - Nothink.org's SSH brute force source block list.
         ip_block_list - A combined list of unique IPs to block.
+        self.log - Logging call.
 
         Methods:
         get_et_ch - Retrieves the compromised host list from emerging
@@ -660,6 +710,7 @@ class OSINTBlock():
         self.bl_de = []
         self.nt_ssh_bl = []
         self.ip_block_list = []
+        self.log = getLogger('auto_ip_block')
 
     def get_et_ch(self):
         """Retrieves list of compromised hosts from emerging threats.
@@ -673,11 +724,23 @@ class OSINTBlock():
             'https://rules.emergingthreats.net' +
             '/blockrules/compromised-ips.txt'
         )
-        response = get(url)
-        data = response.text
-        for entry in data.split('\n'):
-            if not entry.startswith('#'):
-                self.et_ch.append(entry.strip('\n') + '/32')
+        try:
+            response = get(url)
+            data = response.text
+            for entry in data.split('\n'):
+                if not entry.startswith('#'):
+                    self.et_ch.append(entry.strip('\n') + '/32')
+            self.log.info(
+                'Succesfully retrieved compromised IP list from ET.'
+            )
+            self.log.debug(
+                '%d IPs are in the compromised IP list from ET.',
+                len(self.et_ch)
+            )
+        except Exception:
+            self.log.exception(
+                'Unable to retrieve compromised IP list from ET.'
+            )
         return response.status_code
 
     def get_ssl_bl(self):
@@ -689,11 +752,23 @@ class OSINTBlock():
         response.status_code - The HTTP staus code of the request made
         to emerging threats."""
         url = 'https://sslbl.abuse.ch/blacklist/sslipblacklist.txt'
-        response = get(url)
-        data = response.text
-        for entry in data.split('\r\n'):
-            if not entry.startswith('#'):
-                self.ssl_bl.append(entry + '/32')
+        try:
+            response = get(url)
+            data = response.text
+            for entry in data.split('\r\n'):
+                if not entry.startswith('#'):
+                    self.ssl_bl.append(entry + '/32')
+            self.log.info(
+                'Successfully retrieved known botnet C2 list from abuse.ch'
+            )
+            self.log.debug(
+                '%d hosts are indicated as botnet C2 hosts by abuse.ch',
+                len(self.sl_bl)
+            )
+        except Exception:
+            self.log.exception(
+                'Unable to retrive botnet C2 list from URLHaus'.
+            )
         return response.status_code
 
     def get_talos_list(self):
@@ -705,10 +780,17 @@ class OSINTBlock():
         response.status_code - The HTTP staus code of the request made
         to emerging threats."""
         url = 'https://talosintelligence.com/documents/ip-blacklist'
-        response = get(url)
-        data = response.text
-        for entry in data.split('\n'):
-            self.tbl.append(entry + '/32')
+        try:
+            response = get(url)
+            data = response.text
+            for entry in data.split('\n'):
+                self.tbl.append(entry + '/32')
+            self.log.info('Succesfully retrieved Talos black list.')
+            self.log.debug(
+                '%d hosts are in the Talos black list', len(self.tbl)
+            )
+        except Exception:
+            self.log.exception('Unable to retrieve blacklist from Talos.')
         return response.status_code
 
     def get_blde_list(self):
@@ -720,10 +802,21 @@ class OSINTBlock():
         response.status_code - The HTTP response returned from
         blocklist.de"""
         url = 'https://lists.blocklist.de/lists/all.txt'
-        response = get(url)
-        data = response.text
-        for entry in data.split('\n'):
-            self.bl_de.append(entry + '/32')
+        try:
+            response = get(url)
+            data = response.text
+            for entry in data.split('\n'):
+                self.bl_de.append(entry + '/32')
+            self.log.info(
+                'Succesfully retrieved the ban list from blocklist.de'
+            )
+            self.log.debug(
+                '%d hosts are in the blocklist.de ban list.', len(self.bl_de)
+            )
+        except Exception:
+            self.log.exception(
+                'Unable to retrieve the ban list from blocklist.de'
+            )
         return response.status_code
 
     def get_nt_ssh_bl(self):
@@ -738,10 +831,24 @@ class OSINTBlock():
             r'http://www.nothink.org/honeypots/' +
             r'honeypot_ssh_blacklist_2019.txt'
         )
-        response = get(url)
-        data = response.text
-        for entry in data.split('\n'):
-            self.nt_ssh_bl.append(entry + '/32')
+        try:
+            response = get(url)
+            data = response.text
+            for entry in data.split('\n'):
+                self.nt_ssh_bl.append(entry + '/32')
+            self.log.info(
+                'Successfully retrieved list of known ssh brute force ' +
+                'servers from nothink.org.'
+            )
+            self.log.debug(
+                '%d hosts are in the ssh_brute force list from nothink.org',
+                len(self.nt_ssh_bl)
+            )
+        except Exception:
+            self.log.exception(
+                'Unable to retrieve list of ssh brute force servers from ' +
+                'nothink.org'
+            )
         return response.status_code
 
     def generate_block_list(self):
@@ -777,4 +884,8 @@ class OSINTBlock():
             if unique_item in self.et_ch:
                 write_item = unique_item + ' #ABL ET Compromised Host.'
             self.ip_block_list.append(write_item)
+        self.log.info(
+            '%d IPs are in the consolidated block list.', 
+            len(self.ip_block_list)
+        )
         return self.ip_block_list
