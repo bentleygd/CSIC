@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from configparser import ConfigParser
+from logging import basicConfig, INFO, getLogger
 
 from requests import ConnectionError
 
@@ -22,7 +23,14 @@ def main():
     a_parse.add_argument('indicator', type=str, help='Indicator to check ' +
                                                      'for.')
     args = a_parse.parse_args()
-
+    # Enabling logging and setting logging configuration.
+    log = getLogger('csic')
+    basicConfig(
+        format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+        datefmt='%m/%d/%Y %H:%M:%S',
+        level=INFO,
+        filename='csic_client.log'
+    )
     # Setting the configuration.
     config = ConfigParser()
     config.read('config.cnf')
@@ -35,10 +43,14 @@ def main():
     if args.ip:
         if not validate.validateIP(args.indicator):
             print('Invalid IP address provided as input.')
+            log.error(
+                'IP address %s failed input validation.', args.indicator
+            )
             exit(1)
         ip_chck = osintchck.IPOSINT(args.indicator)
 
         try:
+            log.debug('Retrieving CSI for %s', args.indicator)
             vt = ip_chck.VTChck(vt_api_key)
             if vt == 200:
                 print('*' * 32)
@@ -144,16 +156,21 @@ def main():
         except ConnectionError:
             print('Unable to connect to URLHaus due to network ' +
                   'problems.')
+        log.debug('Finished retrieving CSI for %s', args.indicator)
 
     # Looking for domain info.
     if args.dns:
         if not validate.validateDN(args.indicator):
             print('Invalid DNS name.  DNS names must be RFC 1035 compliant.')
+            log.error('%s failed DNS name input validation', args.indicator)
             exit(1)
         dns_chck = osintchck.DomainOSINT(args.indicator)
 
         try:
             vt = dns_chck.VTChck(vt_api_key)
+            log.debug(
+                'Beginning retrieving domain name CSI for %s', args.indicator
+            )
             if vt == 200:
                 vt_results = dns_chck.vt_results
                 print('*' * 32)
@@ -261,19 +278,27 @@ def main():
                 print('URLHaus status: %s' % urlh)
         except ConnectionError:
             print('Unable to connect to URLHaus due to network problems.')
+        log.debug(
+            'Finished retrieving domain name CSI for %s', args.indicator
+        )
 
     # Looking for URL related info.
     if args.url:
         if not validate.validateURL(args.indicator):
+            log.error('URL %s failed input validation.', args.indicator)
             exit(1)
         domain = args.indicator.split('/')[2]
         if not validate.validateDN(domain):
             print('Domain name is not compliant with RFC 1035.')
             exit(1)
+            log.error(
+                'Domain in URL %s failed input validation.', args.indicator
+            )
         u_chck = osintchck.URLOSINT(args.indicator)
 
         try:
             vt = u_chck.VTChck(vt_api_key)
+            log.debug('Retrieving URL CSI for %s', args.indicator)
             if vt == 200:
                 print('*' * 32)
                 print('VirusTotal Results:')
@@ -319,6 +344,7 @@ def main():
                 print('URLHaus status: %s' % urlh)
         except ConnectionError:
             print('Unable to connect to URL Haus due to network problems')
+        log.debug('Finished retrieving URL CSI for %s', args.indicator)
 
     # Looking for file realted info.
     if args.file:
@@ -328,6 +354,7 @@ def main():
 
         try:
             vt = f_chck.VTChck(vt_api_key)
+            log.debug('Retrieving file related CSI for %s', args.indicator)
             if vt == 200:
                 print('*' * 32)
                 print('VirusTotal Results:')
@@ -363,6 +390,9 @@ def main():
         except ConnectionError:
             print('Unable to connect to HybridAnalysis due to network ' +
                   'problems.')
+        log.debug(
+            'Finished retrieving file related CSI for %s', args.indicator
+        )
 
 
 if __name__ == '__main__':

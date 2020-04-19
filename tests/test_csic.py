@@ -47,6 +47,13 @@ class TestCSICConfig:
 
 
 class TestOSIBlock:
+    def tets_config(self):
+        """Tests config for the path element."""
+         config_path = r'../example.conf'
+        config = ConfigParser()
+        config.read(config_path)
+        assert 'path' in config['block']
+        
     def test_et_list(self):
         """Tests retrieving the ET compromised host list."""
         url = (

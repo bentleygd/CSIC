@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from argparse import ArgumentParser
 from configparser import ConfigParser
+from logging import basicConfig, INFO, getLogger
 
 from requests import ConnectionError
 
@@ -23,7 +24,14 @@ def main():
     a_parse.add_argument('indicator', type=str, help='Indicator to check ' +
                                                      'for.')
     args = a_parse.parse_args()
-
+    # Enabling logging and setting logging configuration.
+    log = getLogger('csic')
+    basicConfig(
+        format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+        datefmt='%m/%d/%Y %H:%M:%S',
+        level=INFO,
+        filename='csic_client.log'
+    )
     # Setting the configuration.
     config = ConfigParser()
     config.read('config.cnf')
@@ -37,11 +45,15 @@ def main():
     # Looking for IP info.
     if args.ip:
         if not validate.validateIP(args.indicator):
+            log.error(
+                '%s failed IP address input validation', args.indicator
+            )
             exit(1)
         ip_chck = osintchck.IPOSINT(args.indicator)
 
         try:
             vt = ip_chck.VTChck(vt_api_key)
+            log.debug('Beginning IP CSI check for %s', args.indicator)
             if vt == 200:
                 if ip_chck.vt_response == 1:
                     vt_results = ip_chck.vt_results
@@ -159,16 +171,23 @@ def main():
                         'URLHaus Results:\n' +
                         urlh_mail)
         # Sending the mail message
+        log.debug('Finsihed retrieving IP CSI for %s', args.indicator)
         mail_send(sender, rcpts, 'CSIC IP Info', smtp_server, ip_mail_body)
 
     # Looking for domain info.
     if args.dns:
         if not validate.validateDN(args.indicator):
+            log.error(
+                '%s failed domain name input validation.', args.indicator
+            )
             exit(1)
         dns_chck = osintchck.DomainOSINT(args.indicator)
 
         try:
             vt = dns_chck.VTChck(vt_api_key)
+            log.debug(
+                'Beginning domain name CSI check for %s.', args.indicator
+            )
             if vt == 200:
                 vt_results = dns_chck.vt_results
                 if dns_chck.vt_response == 1:
@@ -281,19 +300,26 @@ def main():
                          'URLHaus Results:\n' +
                          urlh_mail)
         # Sending the mail message.
+        log.debug('Finished domain name CSI check for %s.', args.indicator)
         mail_send(sender, rcpts, 'CSIC DNS Info', smtp_server, dns_mail_body)
 
     # Looking for URL related info.
     if args.url:
         if not validate.validateURL(args.indicator):
+            log.error('%s failed URL input validation.', args.indicator)
             exit(1)
         domain = args.indicator.split('/')[2]
         if not validate.validateDN(domain):
+            log.error(
+                'The domain name in %s failed domain name input validation',
+                args.indicator
+            )
             exit(1)
         u_chck = osintchck.URLOSINT(args.indicator)
 
         try:
             vt = u_chck.VTChck(vt_api_key)
+            log.debug('Beginning URL CSI check for %s.', args.indicator)
             if vt == 200:
                 if u_chck.vt_response == 1:
                     v_results = u_chck.vc_results
@@ -353,6 +379,7 @@ def main():
                          urlh_mail)
         # Sending the mail message.
         mail_send(sender, rcpts, 'CSIC URL Info', smtp_server, url_mail_body)
+        log.debug('Finished URL CSI check for %s.', args.indicator)
 
     # Looking for file realted info.
     if args.file:
@@ -361,6 +388,10 @@ def main():
 
         try:
             vt = f_chck.VTChck(vt_api_key)
+            log.debug(
+                'Beginning file related CSI chek for this hash: %s',
+                args.indicator
+            )
             if vt == 200:
                 if f_chck.vt_response == 1:
                     vt_results = f_chck.vt_results
@@ -408,6 +439,10 @@ def main():
                           'FalconSandBox Results:\n' +
                           fsb_mail)
         # Sending the mail message.
+        log.debug(
+                'Completed file related CSI chek for this hash: %s',
+                args.indicator
+            )
         mail_send(sender, rcpts, 'CSIC File Info', smtp_server, file_mail_body)
 
 

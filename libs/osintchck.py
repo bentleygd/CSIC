@@ -763,11 +763,11 @@ class OSINTBlock():
             )
             self.log.debug(
                 '%d hosts are indicated as botnet C2 hosts by abuse.ch',
-                len(self.sl_bl)
+                len(self.ssl_bl)
             )
         except Exception:
             self.log.exception(
-                'Unable to retrive botnet C2 list from URLHaus'.
+                'Unable to retrive botnet C2 list from URLHaus.'
             )
         return response.status_code
 
@@ -885,7 +885,7 @@ class OSINTBlock():
                 write_item = unique_item + ' #ABL ET Compromised Host.'
             self.ip_block_list.append(write_item)
         self.log.info(
-            '%d IPs are in the consolidated block list.', 
+            '%d IPs are in the consolidated block list.',
             len(self.ip_block_list)
         )
         return self.ip_block_list
