@@ -6,41 +6,41 @@ from configparser import ConfigParser
 class TestCSICConfig:
     def test_config_exists(self):
         """Tests to make sure the config file exists."""
-        config_path = r'../example.conf'
+        config_path = 'example.conf'
         test = exists(config_path)
         assert test is True
 
     def test_vt_api_key(self):
         """Tests for the presence of a Virus Total api key."""
-        config_path = r'../example.conf'
+        config_path = 'example.conf'
         config = ConfigParser()
         config.read(config_path)
         assert 'vt' in config['API']
 
     def test_fsb_api_key(self):
         """Tests for the presence of a Hybrid Analysis API key."""
-        config_path = r'../example.conf'
+        config_path = 'example.conf'
         config = ConfigParser()
         config.read(config_path)
         assert 'fsb' in config['API']
 
     def test_mail_server(self):
         """Tests for the presence of the mail server config element."""
-        config_path = r'../example.conf'
+        config_path = 'example.conf'
         config = ConfigParser()
         config.read(config_path)
         assert 'server' in config['mail']
 
     def test_mail_sender(self):
         """Tests for the presence of the mail sender config element."""
-        config_path = r'../example.conf'
+        config_path = 'example.conf'
         config = ConfigParser()
         config.read(config_path)
         assert 'sender' in config['mail']
 
     def test_mail_recipients(self):
         """Tests for the presence of the mail recipient config element."""
-        config_path = r'../example.conf'
+        config_path = 'example.conf'
         config = ConfigParser()
         config.read(config_path)
         assert 'rcpts' in config['mail']
@@ -49,7 +49,7 @@ class TestCSICConfig:
 class TestOSIBlock:
     def test_config(self):
         """Tests config for the path element."""
-        config_path = r'../example.conf'
+        config_path = 'example.conf'
         config = ConfigParser()
         config.read(config_path)
         assert 'path' in config['block']
