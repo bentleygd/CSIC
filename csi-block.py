@@ -27,7 +27,12 @@ def update_block_list(
     Raises:
     OSError - Occurs if path_to_block_list does not exist or cannot be
     edited due to permissions errors."""
-    block_file = open(path_to_block_list, 'r', encoding='ascii')
+    log = getLogger('auto_ip_block')
+    try:
+        block_file = open(path_to_block_list, 'r', encoding='ascii')
+    except OSError:
+        log.exception('Unable to open block file. This needs to be fixed.')
+        exit(1)
     temp_block_list = []
     for line in block_file:
         temp_block_list.append(line.strip('\n'))
@@ -38,7 +43,11 @@ def update_block_list(
             temp_block_list.remove(index_num)
     for entry in csi_ip_list:
         temp_block_list.append(entry)
-    block_file = open(path_to_block_list, 'w', encoding='ascii')
+    try:
+        block_file = open(path_to_block_list, 'w', encoding='ascii')
+    except OSError:
+        log.exception('Unable to open block file. This needs to be fixed.')
+        exit(1)
     for entry in temp_block_list:
         block_file.write(entry + '\n')
     block_file.close()
