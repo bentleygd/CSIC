@@ -1,6 +1,8 @@
 from requests import get, post, ReadTimeout, HTTPError
 from logging import getLogger
 
+from libs.validate import validateIP
+
 
 class IPOSINT:
     def __init__(self, ip):
@@ -728,7 +730,7 @@ class OSINTBlock():
             response = get(url)
             data = response.text
             for entry in data.split('\n'):
-                if not entry.startswith('#'):
+                if not entry.startswith('#') and validateIP(entry):
                     self.et_ch.append(entry.strip('\n') + '/32')
             self.log.info(
                 'Succesfully retrieved compromised IP list from ET.'
@@ -756,7 +758,7 @@ class OSINTBlock():
             response = get(url)
             data = response.text
             for entry in data.split('\r\n'):
-                if not entry.startswith('#'):
+                if not entry.startswith('#') and validateIP(entry):
                     self.ssl_bl.append(entry + '/32')
             self.log.info(
                 'Successfully retrieved known botnet C2 list from abuse.ch'
@@ -784,7 +786,8 @@ class OSINTBlock():
             response = get(url)
             data = response.text
             for entry in data.split('\n'):
-                self.tbl.append(entry + '/32')
+                if not entry.startswith('#') and validateIP(entry):
+                    self.tbl.append(entry + '/32')
             self.log.info('Succesfully retrieved Talos black list.')
             self.log.debug(
                 '%d hosts are in the Talos black list', len(self.tbl)
@@ -806,7 +809,8 @@ class OSINTBlock():
             response = get(url)
             data = response.text
             for entry in data.split('\n'):
-                self.bl_de.append(entry + '/32')
+                if not entry.startswith('#') and validateIP(entry):
+                    self.bl_de.append(entry + '/32')
             self.log.info(
                 'Succesfully retrieved the ban list from blocklist.de'
             )
@@ -835,7 +839,8 @@ class OSINTBlock():
             response = get(url)
             data = response.text
             for entry in data.split('\n'):
-                self.nt_ssh_bl.append(entry + '/32')
+                if not entry.startswith('#') and validateIP(entry):
+                    self.nt_ssh_bl.append(entry + '/32')
             self.log.info(
                 'Successfully retrieved list of known ssh brute force ' +
                 'servers from nothink.org.'
