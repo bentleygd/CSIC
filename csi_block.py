@@ -49,7 +49,6 @@ def update_block_list(
         del temp_block_list[min(indexes):max(indexes) + 1]
     except ValueError:
         log.exception('No ABL entries in block list to remove.')
-        pass
     # Writing new ABL entries to a list.
     for entry in csi_ip_list:
         temp_block_list.append(entry)
@@ -103,7 +102,6 @@ def remove_csi_ips(path_to_block_list):
         del blocked_ips[min(indexes):max(indexes) + 1]
     except ValueError:
         log.exception('Error occured when removing ABL entries.')
-        pass
     # Opening block list file.  If we can't due to an OSError, quit
     # and make a log entry.
     try:
