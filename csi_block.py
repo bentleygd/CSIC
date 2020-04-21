@@ -45,6 +45,7 @@ def update_block_list(
     for entry in temp_block_list:
         if '#ABL' in entry:
             indexes.append(temp_block_list.index(entry))
+    if len(indexes) >= 1:
         try:
             del temp_block_list[min(indexes):max(indexes) + 1]
         except ValueError:
