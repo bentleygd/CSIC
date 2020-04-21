@@ -45,10 +45,10 @@ def update_block_list(
     for entry in temp_block_list:
         if '#ABL' in entry:
             indexes.append(temp_block_list.index(entry))
-    try:
-        del temp_block_list[min(indexes):max(indexes) + 1]
-    except ValueError:
-        log.exception('No ABL entries in block list to remove.')
+        try:
+            del temp_block_list[min(indexes):max(indexes) + 1]
+        except ValueError:
+            log.exception('No ABL entries in block list to remove.')
     # Writing new ABL entries to a list.
     for entry in csi_ip_list:
         temp_block_list.append(entry)
