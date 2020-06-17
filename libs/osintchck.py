@@ -231,11 +231,9 @@ class IPOSINT:
             }
         else:
             self.log.error(
-                'Error occurred when retrieving data from URLHaus for %s' +
-                'The query response is %s', (
-                    self.ip, response.get('query_status')
-                    )
-            )
+                'Error occurred when retrieving data from URLHaus for %s .',
+                self.ip
+                )
         return response.get('query_status')
 
 
