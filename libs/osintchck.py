@@ -565,7 +565,7 @@ class URLOSINT:
         else:
             self.log.error(
                 'Unable to retrieve data for %s from abuse.ch. The query ' +
-                'response is %s.', (self.b_url, response.get('query_status'))
+                'response is %s.' % self.b_url
             )
         return response.get('query_status')
 
