@@ -8,41 +8,41 @@ from CSIC.csi_block import update_block_list, remove_csi_ips
 class TestCSICConfig:
     def test_config_exists(self):
         """Tests to make sure the config file exists."""
-        config_path = 'example.conf'
+        config_path = 'config.cnf'
         test = exists(config_path)
         assert test is True
 
     def test_vt_api_key(self):
         """Tests for the presence of a Virus Total api key."""
-        config_path = 'example.conf'
+        config_path = 'config.cnf'
         config = ConfigParser()
         config.read(config_path)
         assert 'vt' in config['API']
 
     def test_fsb_api_key(self):
         """Tests for the presence of a Hybrid Analysis API key."""
-        config_path = 'example.conf'
+        config_path = 'config.cnf'
         config = ConfigParser()
         config.read(config_path)
         assert 'fsb' in config['API']
 
     def test_mail_server(self):
         """Tests for the presence of the mail server config element."""
-        config_path = 'example.conf'
+        config_path = 'config.cnf'
         config = ConfigParser()
         config.read(config_path)
         assert 'server' in config['mail']
 
     def test_mail_sender(self):
         """Tests for the presence of the mail sender config element."""
-        config_path = 'example.conf'
+        config_path = 'config.cnf'
         config = ConfigParser()
         config.read(config_path)
         assert 'sender' in config['mail']
 
     def test_mail_recipients(self):
         """Tests for the presence of the mail recipient config element."""
-        config_path = 'example.conf'
+        config_path = 'config.cnf'
         config = ConfigParser()
         config.read(config_path)
         assert 'rcpts' in config['mail']
@@ -51,7 +51,7 @@ class TestCSICConfig:
 class TestOSIBlock:
     def test_config(self):
         """Tests config for the path element."""
-        config_path = 'example.conf'
+        config_path = 'config.cnf'
         config = ConfigParser()
         config.read(config_path)
         assert 'path' in config['block']
@@ -97,6 +97,22 @@ class TestOSIBlock:
         ip_block = OSINTBlock()
         nothink_response = ip_block.get_nt_ssh_bl()
         data = {'response': nothink_response, 'list': ip_block.nt_ssh_bl}
+        if data['response'] == 200 and len(data['list']) > 10:
+            test = True
+        assert test is True
+
+    def test_abuse_ip_bl(self):
+        """Tests retrieving the black list from the Abuse IP DB."""
+        config_path = 'config.cnf'
+        config = ConfigParser()
+        config.read(config_path)
+        api = config['API']['aipdb']
+        ip_block = OSINTBlock()
+        abuseip_response = ip_block.get_adb_bl(api)
+        data = {
+            'response': abuseip_response,
+            'list': ip_block.adb_bl
+        }
         if data['response'] == 200 and len(data['list']) > 10:
             test = True
         assert test is True

@@ -1,5 +1,6 @@
-from requests import get, post, ReadTimeout, HTTPError
+from requests import get, post
 from logging import getLogger
+from requests.exceptions import Timeout, HTTPError
 
 from libs.validate import validateIP
 
@@ -12,24 +13,19 @@ class IPOSINT:
         security analysts and non-infosec personnel to be able to make
         more informed decisions about a given threat.
 
-        Keyword Arguments:
+        Required Input:
         ip - str(), the IP address to evaluate.
 
         Instance variables:
-        ip - the IP address passed as a keyword argument.
-        vt_results - results from VirusTotal for the IP passed a
-        keyword argument.
+        ip - the provided IP address during class instantiation.
+        vt_results - results from VirusTotal for the IP..
         vt_response - The response code received from VirusTotal.
-        tc_mw - Threat crowd malware count for the IP passed a keyword
-        argument.
-        tm_mw - Threat miner malware count for the IP passed a keyword
-        argument.
-        fsb_mw - Falcon SandBox malwre count for the IP passed a
-        keyword argument.
-        tbl_status - Talos blacklist results for the IP passed a
-        keyword argument.
-        uh_results - URLHaus results for the IP passed a keyword
-        argument.
+        tc_mw - Threat crowd malware count for the IP.
+        tm_mw - Threat miner malware count for the IP.
+        fsb_mw - Falcon SandBox malwre count for the IP.
+        tbl_status - Talos block list results for the IP.
+        uh_results - URLHaus results for the IP.
+        adb_results - AbuseIPDB results for the IP.
         log - Logging call.
 
         Methods:
@@ -38,8 +34,9 @@ class IPOSINT:
         TMChck - Checks ThreatMiner for info for a given IP.
         FSBChck - Checks Falcon Sandbox (hybrid-analysis) for info for
         a given IP.
-        TBLChck - Checks to see if an IP is on the Talos blacklist.
-        UHChck - Checks URLHaus for info for a given IP."""
+        TBLChck - Checks to see if an IP is on the Talos block list.
+        UHChck - Checks URLHaus for info for a given IP.
+        AIDBChck - Checks the AbuseIP database for a given IP."""
         self.ip = ip
         self.vt_results = dict()
         self.vt_response = int()
@@ -48,6 +45,7 @@ class IPOSINT:
         self.fsb_mw = int()
         self.tbl_status = str()
         self.uh_results = dict()
+        self.adb_results = list()
         self.log = getLogger('csic')
 
     def VTChck(self, vt_api):
@@ -105,7 +103,31 @@ class IPOSINT:
         provided for a given IP address."""
         url = 'https://www.threatcrowd.org/searchApi/v2/ip/report/'
         params = {'ip': self.ip}
-        data = get(url, params=params).json()
+        try:
+            response = get(url, params=params, timeout=5)
+        except Timeout:
+            self.log.exception(
+                'Timeout occurred during connection to ThreatCrowd'
+                )
+            status_code = 500
+            return status_code
+        except Exception:
+            self.log.exception('Exception occured, please investigate')
+            status_code = 500
+            return status_code
+        try:
+            response.raise_for_status
+        except HTTPError:
+            self.log.exception(
+                '%d error code from ThreatCrowd' % response.status_code
+            )
+            status_code = 500
+            return status_code
+        if response.json() is not None:
+            data = response.json()
+        else:
+            status_code = 500
+            return status_code
         if data.get('response_code') == '1':
             self.tc_mw = len(data.get('hashes'))
             status_code = 200
@@ -149,7 +171,7 @@ class IPOSINT:
                 'response code is %s', (self.ip, status_code)
             )
             return status_code
-        except ReadTimeout:
+        except Timeout:
             status_code = 408
             self.log.exception(
                 'Timeout in operation retrieving data from ThreatMiner for ' +
@@ -188,20 +210,20 @@ class IPOSINT:
         return response.status_code
 
     def TBLChck(self):
-        """Checks to see if an IP is on the Talos blacklist.
+        """Checks to see if an IP is on the Talos block list.
 
         Outputs:
         tbl_status - Whether or not a given IP address is on the Talos
-        blacklist.
+        block list.
         response.status_code - The HTTP response code returned by the
         Talos website."""
         url = 'https://talosintelligence.com/documents/ip-blacklist'
         response = get(url)
         data = response.text.split('\n')
         if self.ip in data:
-            self.tbl_status = 'Blacklisted IP'
+            self.tbl_status = 'block listed IP'
         else:
-            self.tbl_status = 'Non-blacklisted IP'
+            self.tbl_status = 'Non-block listed IP'
         if response.status_code == 200:
             self.log.info('Successfully retrieved Talos IP black list.')
         else:
@@ -235,6 +257,40 @@ class IPOSINT:
                 self.ip
                 )
         return response.get('query_status')
+
+    def AIDBCheck(self, aid_key):
+        """Checks the Abuse IP database for info for a given IP.
+
+        Required Input:
+        aid_key - str(), The API key for the Abuse IP database.
+
+        Outputs:
+        adb_results - dict(), A dictionary containing info about a
+        given IP address from the Abuse IP database.
+
+        Exceptions:
+        HTTPError - Occurs when the called enpdoint returns a non-200
+        response."""
+        url = 'https://api.abuseipdb.com/api/v2/check'
+        params = {
+            'ipAddress': self.ip,
+            'MaxAgeInDays': '30'
+        }
+        headers = {'Accept': 'application/json', 'Key': aid_key}
+        response = get(url, headers=headers, params=params)
+        try:
+            response.raise_for_status
+        except HTTPError:
+            self.log.exception(
+                '%d response received from the AIDB' % response.status_code
+            )
+        data = response.json()['data']
+        self.adb_results = {
+           'report_count': data['totalReports'],
+           'confidence_score': data['abuseConfidenceScore']
+        }
+        self.log.info('Retrieved abuse IP DB info for %s' % self.ip)
+        return response.status_code
 
 
 class DomainOSINT:
@@ -374,7 +430,7 @@ class DomainOSINT:
                 'response code is %d', (self.domain, status_code)
             )
             return status_code
-        except ReadTimeout:
+        except Timeout:
             self.log.exception(
                 'Timeout occured retrieving data from Threat Miner for ' +
                 '%s', self.domain
@@ -405,7 +461,10 @@ class DomainOSINT:
             if self.fsb_mw > 0:
                 ts = int()
                 for result in response.json().get('result'):
-                    ts = ts + result.get('threat_score')
+                    if result.get('threat_score') is not None:
+                        ts = ts + result.get('threat_score')
+                    else:
+                        ts = 0
                 self.fsb_ts_avg = ts / len(response.json().get('result'))
         else:
             self.log.error(
@@ -441,7 +500,7 @@ class DomainOSINT:
         else:
             self.log.error(
                 'Unable to retrieve information from URLHaus for ' +
-                '%s. The query response is: %s', (
+                '%s. The query response is: %s' % (
                     self.domain, response.get('query_status')
                 )
             )
@@ -533,7 +592,7 @@ class URLOSINT:
         else:
             self.log.error(
                 'Unable to retrieve info from hybrid analysis for %s. The ' +
-                'HTTP response code is %s.', (
+                'HTTP response code is %s.' % (
                     self.b_url, response.status_code
                 )
             )
@@ -686,10 +745,11 @@ class OSINTBlock():
         Instance variables:
         et_ch - The list of compromised hosts from Emerging Threts.
         ssl_bl - The SSL BL from abuse.ch of known botnet C2 hosts.
-        tbl - Cisco Talos' blacklist.
+        tbl - Cisco Talos' block list.
         bl_de - Blocklist.de's blocklist that is updated every 48
         hours.
         nt_ssh_bl - Nothink.org's SSH brute force source block list.
+        adb_bl - Abuse IP Database's block list.
         ip_block_list - A combined list of unique IPs to block.
         self.log - Logging call.
 
@@ -702,6 +762,8 @@ class OSINTBlock():
         get_blde_list - Retriees the black list from blocklist.de
         get_nt_ssh_bl - Retrieves the black list of ssh brute force
         servers from nothink.org
+        get_adb_bl - Retrieves the black list from the Abuse IP
+        database.
         generate_block_list - Combines all blocklists and generates
         a list of unique IPs to block."""
         self.et_ch = []
@@ -709,6 +771,7 @@ class OSINTBlock():
         self.tbl = []
         self.bl_de = []
         self.nt_ssh_bl = []
+        self.adb_bl = []
         self.ip_block_list = []
         self.log = getLogger('auto_ip_block')
 
@@ -772,7 +835,7 @@ class OSINTBlock():
         return response.status_code
 
     def get_talos_list(self):
-        """Retrieves the IP blacklist from Cisco Talos
+        """Retrieves the IP block list from Cisco Talos
 
         Outputs:
         self.ssl_bl - A list of IP addresses that Talos has determined
@@ -791,11 +854,11 @@ class OSINTBlock():
                 '%d hosts are in the Talos black list', len(self.tbl)
             )
         except Exception:
-            self.log.exception('Unable to retrieve blacklist from Talos.')
+            self.log.exception('Unable to retrieve block list from Talos.')
         return response.status_code
 
     def get_blde_list(self):
-        """Retrieves the blacklist from blocklist.de
+        """Retrieves the block list from blocklist.de
 
         Outputs:
         self.bl_de - Blocklist.de's blocklist that is updated every 48
@@ -822,7 +885,7 @@ class OSINTBlock():
         return response.status_code
 
     def get_nt_ssh_bl(self):
-        """Retrieves the SSH blacklist from nothink.org
+        """Retrieves the SSH block list from nothink.org
 
         Outputs:
         self.nt_ssh_bl - Nothink.org's SSH brute force source block
@@ -854,6 +917,35 @@ class OSINTBlock():
             )
         return response.status_code
 
+    def get_adb_bl(self, api_key):
+        """Retrieves the black list from the Abuse IP DB.
+
+        Required Input:
+        api_key - An Abuse IP DB API key.
+
+        Output:
+        response.status_code - The HTTP code returned by the block list
+        API endpoint.
+
+        Exceptions:
+        HTTPError - Occurs when a non-200 response is generated by the
+        Abuse IP DB block list endpoint.
+        Timeout - Occurs when the request to the endpoint times out."""
+        url = 'https://api.abuseipdb.com/api/v2/blacklist'
+        headers = {'Accept': 'text/plain', 'Key': api_key}
+        params = {'limit': '10000'}
+        try:
+            response = get(url, headers=headers, params=params, timeout=10)
+            response.raise_for_status
+        except Timeout:
+            self.log.exception('Timeout occurred connecting to', url)
+        except HTTPError:
+            self.log.exception('Non-200 response received from', url)
+        for ip in response.text.split('\n'):
+            if validateIP(ip):
+                self.adb_bl.append(ip + '/32')
+        return response.status_code
+
     def generate_block_list(self):
         """Combines all blocklists and generates a list of unique IPs
         to block.
@@ -867,7 +959,8 @@ class OSINTBlock():
             self.ssl_bl,
             self.tbl,
             self.bl_de,
-            self.et_ch
+            self.et_ch,
+            self.adb_bl
         ]
         for _list in osint_lists:
             for item in _list:
@@ -881,11 +974,13 @@ class OSINTBlock():
             if unique_item in self.ssl_bl:
                 write_item = unique_item + ' #ABL URLHaus Botnet C2.'
             if unique_item in self.tbl:
-                write_item = unique_item + ' #ABL Talos Blacklist IP.'
+                write_item = unique_item + ' #ABL Talos block list IP.'
             if unique_item in self.bl_de:
                 write_item = unique_item + ' #ABL Blocklist.de Ban list.'
             if unique_item in self.et_ch:
                 write_item = unique_item + ' #ABL ET Compromised Host.'
+            if unique_item in self.adb_bl:
+                write_item = unique_item + ' #ABL Abuse IP DB block list IP'
             self.ip_block_list.append(write_item)
         self.log.info(
             '%d IPs are in the consolidated block list.',

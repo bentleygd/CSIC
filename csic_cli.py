@@ -38,6 +38,7 @@ def main():
     # Specifying API keys.
     vt_api_key = config['API']['vt']
     fsb_api_key = config['API']['fsb']
+    adb_api_key = config['API']['aipdb']
 
     # Looking for IP info.
     if args.ip:
@@ -95,6 +96,8 @@ def main():
             print('ThreatCrowd Results:')
             if tc == 200:
                 print('Associated malware count: %d' % ip_chck.tc_mw)
+            elif tc == 500:
+                print('Error connecting to ThreatCrowd')
             else:
                 print('No results found on ThreatCrowd')
         except ConnectionError:
@@ -110,7 +113,7 @@ def main():
             elif tm == 408:
                 print('Request timed out')
             else:
-                print('ThreatMiner HTTP response code: %d' % tm)
+                print('ThreatMiner API status code: %d' % tm)
                 print('No results found on ThreatMiner.')
         except ConnectionError:
             print('Unable to connect to ThreatMiner due to network ' +
@@ -157,6 +160,16 @@ def main():
             print('Unable to connect to URLHaus due to network ' +
                   'problems.')
         log.debug('Finished retrieving CSI for %s', args.indicator)
+
+        adb = ip_chck.AIDBCheck(adb_api_key)
+        print('*' * 32)
+        print('Abuse IP DB Results:')
+        if adb == 200:
+            a_results = ip_chck.adb_results
+            print('IP Report Count: %s' % a_results['report_count'])
+            print('Abuse Confidence Score: %s' % a_results['confidence_score'])
+        else:
+            print('%d response code from Abuse IP DB API' % adb)
 
     # Looking for domain info.
     if args.dns:
