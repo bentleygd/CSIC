@@ -1,7 +1,7 @@
 # CSIChck
 Python scripts that automate checking different crowd-source threat intelligence feeds to determine if something is evil.
 
-[![Known Vulnerabilities](https://snyk.io/test/github/bentleygd/CSIC/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/bentleygd/CSIC?targetFile=requirements.txt)![Lint and Test](https://github.com/bentleygd/CSIC/workflows/Lint%20and%20Test/badge.svg)[![Total alerts](https://img.shields.io/lgtm/alerts/g/bentleygd/CSIC.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bentleygd/CSIC/alerts/)[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/bentleygd/CSIC.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bentleygd/CSIC/context:python)
+[![Known Vulnerabilities](https://snyk.io/test/github/bentleygd/CSIC/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/bentleygd/CSIC?targetFile=requirements.txt)![Lint](https://github.com/bentleygd/CSIC/workflows/Lint/badge.svg)[![Total alerts](https://img.shields.io/lgtm/alerts/g/bentleygd/CSIC.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bentleygd/CSIC/alerts/)[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/bentleygd/CSIC.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bentleygd/CSIC/context:python)
 
 # Motivation
 The purpose of this project is to reduce the amount of time that is used during an investigation on whether or not something is "bad".  The scripts can also be used to empower lower tier support teams (i.e., help desk personnel) with a quick and efficient way of determing if something is "bad" when they communicate with users or higher tier support personnel.

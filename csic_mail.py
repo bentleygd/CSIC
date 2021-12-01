@@ -36,8 +36,9 @@ def main():
     config = ConfigParser()
     config.read('config.cnf')
     # Specifying API keys.
-    vt_api_key = config['VT']['api']
-    fsb_api_key = config['FSB']['api']
+    vt_api_key = config['API']['vt']
+    fsb_api_key = config['API']['fsb']
+    adb_api_key = config['API']['aipdb']
     smtp_server = config['mail']['server']
     rcpts = config['mail']['rcpts']
     sender = config['mail']['sender']
@@ -107,7 +108,7 @@ def main():
             elif tm == 408:
                 tm_mail = 'Request timed out.\n'
             else:
-                tm_mail = ('HTTP response code: %d' +
+                tm_mail = ('HTTP response code: %d\n' +
                            'No results found on ThreatMiner.\n') % tm
         except ConnectionError:
             print('Unable to connect to ThreatMiner due to network ' +
@@ -146,10 +147,21 @@ def main():
                              'Reference URL: %s\n' % u_results.get('ref_url')
                              )
             else:
-                urlh_mail = 'URLHaus status: %s' % urlh
+                urlh_mail = 'URLHaus status: %s\n' % urlh
         except ConnectionError:
             print('Unable to connect to URLHaus due to network ' +
                   'problems.')
+
+        adb = ip_chck.AIDBCheck(adb_api_key)
+        if adb == 200:
+            a_results = ip_chck.adb_results
+            adb_mail = (
+                'IP Report Count: %s\n' % a_results['report_count'] +
+                'Abuse Confidence Score: %s\n' % a_results['confidence_score']
+            )
+        else:
+            adb_mail = ('%d response code from Abuse IP DB API' % adb)
+
         # Setting the mail body
         ip_mail_body = ('Indicator: %s\n' % args.indicator +
                         '*' * 32 + '\n' +
@@ -169,7 +181,10 @@ def main():
                         tbl_mail +
                         '*' * 32 + '\n' +
                         'URLHaus Results:\n' +
-                        urlh_mail)
+                        urlh_mail +
+                        '*' * 32 + '\n' +
+                        'Abuse IP DB Results:\n' +
+                        adb_mail)
         # Sending the mail message
         log.debug('Finsihed retrieving IP CSI for %s', args.indicator)
         mail_send(sender, rcpts, 'CSIC IP Info', smtp_server, ip_mail_body)

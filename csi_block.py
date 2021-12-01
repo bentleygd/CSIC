@@ -164,6 +164,12 @@ def main():
         log.error(
             '%d response code from Nothink.org', nothink_response
         )
+    # AbuseIP DB's list of IPs that have an abuse score of 100 (default).
+    abuse_ip_response = ip_block.get_adb_bl(config['api']['aipdb'])
+    if abuse_ip_response != 200:
+        log.error(
+            '%d response code from Abuse IP DB', abuse_ip_response
+        )
     # Consolidating the list and writing it to a file.
     auto_block_list = ip_block.generate_block_list()
     update_block_list(block_path, auto_block_list)
