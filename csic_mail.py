@@ -95,6 +95,8 @@ def main():
             tc = ip_chck.TCChck()
             if tc == 200:
                 tc_mail = 'Associated malware count: %d\n' % ip_chck.tc_mw
+            elif tc == 500:
+                tc_mail = 'Error when connecting to ThreatCrowd\n'
             else:
                 tc_mail = 'No results found on ThreatCrowd\n'
         except ConnectionError:
