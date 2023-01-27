@@ -20,8 +20,6 @@ class IPOSINT:
         ip - the provided IP address during class instantiation.
         vt_results - results from VirusTotal for the IP..
         vt_response - The response code received from VirusTotal.
-        tc_mw - Threat crowd malware count for the IP.
-        tm_mw - Threat miner malware count for the IP.
         fsb_mw - Falcon SandBox malwre count for the IP.
         tbl_status - Talos block list results for the IP.
         uh_results - URLHaus results for the IP.
@@ -30,8 +28,6 @@ class IPOSINT:
 
         Methods:
         VTChck - Checks VirusTotal for info for a given IP address.
-        TCChck - Checks ThreatCrowd for info for a given IP.
-        TMChck - Checks ThreatMiner for info for a given IP.
         FSBChck - Checks Falcon Sandbox (hybrid-analysis) for info for
         a given IP.
         TBLChck - Checks to see if an IP is on the Talos block list.
@@ -40,8 +36,6 @@ class IPOSINT:
         self.ip = ip
         self.vt_results = dict()
         self.vt_response = int()
-        self.tc_mw = int()
-        self.tm_mw = int()
         self.fsb_mw = int()
         self.tbl_status = str()
         self.uh_results = dict()
@@ -89,96 +83,6 @@ class IPOSINT:
                 'Unable to retrieve info from VirusTotal.  The HTTP ' +
                 'response code is %d.', response.status_code)
         return response.status_code
-
-    def TCChck(self):
-        """Checks ThreatCrowd for info for a given IP.
-
-        Keyword arguments:
-        None.
-
-        Outputs:
-        tc_mw - The number of malware samples associated with a given
-        IP address according to threat crowd.
-        status_code - A status code inidcating whether or not data was
-        provided for a given IP address."""
-        url = 'https://www.threatcrowd.org/searchApi/v2/ip/report/'
-        params = {'ip': self.ip}
-        try:
-            response = get(url, params=params, timeout=5)
-        except Timeout:
-            self.log.exception(
-                'Timeout occurred during connection to ThreatCrowd'
-                )
-            status_code = 500
-            return status_code
-        except Exception:
-            self.log.exception('Exception occured, please investigate')
-            status_code = 500
-            return status_code
-        try:
-            response.raise_for_status
-        except HTTPError:
-            self.log.exception(
-                '%d error code from ThreatCrowd' % response.status_code
-            )
-            status_code = 500
-            return status_code
-        if response.json() is not None:
-            data = response.json()
-        else:
-            status_code = 500
-            return status_code
-        if data.get('response_code') == '1':
-            self.tc_mw = len(data.get('hashes'))
-            status_code = 200
-            self.log.info(
-                'Successfully retrieved data for %s from ' +
-                'ThreatCrowd.', self.ip
-            )
-        else:
-            status_code = 404
-            self.log.info('No data preset on ThreatCrowd for %s', self.ip)
-        return status_code
-
-    def TMChck(self):
-        """Checks ThreatMiner for info for a given IP.
-
-        Keyword arguments:
-        None
-
-        Outputs:
-        tm_mw - The number of malware samples associated with a given
-        IP address according to threat miner.
-        status_code - HTTP response code.
-
-        Raises
-        HTTPError - Occurs when there is a non-HTTP 200 respone code.
-        ReadTimeout - Occurs when there is a timeout communicating with
-        Threat Miner."""
-        url = 'https://api.threatminer.org/v2/host.php'
-        params = {'q': self.ip, 'rt': '4'}
-        try:
-            response = get(url, params=params, timeout=3)
-            response.raise_for_status()
-            data = response.json()
-            if (response.status_code == 200 and
-                    data.get('status_code') == '200'):
-                self.tm_mw = len(data.get('results'))
-        except HTTPError:
-            status_code = response.status_code
-            self.log.exception(
-                'Error retrieving data from ThreatMiner for %s. The ' +
-                'response code is %s', (self.ip, status_code)
-            )
-            return status_code
-        except Timeout:
-            status_code = 408
-            self.log.exception(
-                'Timeout in operation retrieving data from ThreatMiner for ' +
-                '%s.', self.ip
-            )
-            return status_code
-        return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
         """Checks hybrid-analysis for info for a given IP.
@@ -306,10 +210,6 @@ class DomainOSINT:
         instantiation of the DomainOSINT object.
         vt_response - The VirusTotal response code.
         vt_results - The results returned by VirusTotal.
-        tc_rc - The ThreatCrowd response code.
-        tc_ips - The IPs returned by ThreatCrowd associated with the
-        domain name.
-        tm_mw - The count of associated malware samples on ThreatMiner.
         fsb_mw - The count of associated malware samples on Hybrid
         Analysis.
         fsb_ts_avg - The average threat score returned by Hybrid Analysis.
@@ -318,16 +218,11 @@ class DomainOSINT:
 
         Methods:
         VTChck - Checks VirusTotal for info for a given domain.
-        TCChck - Checks ThreatCrowd for info for a given domain.
-        TMChck - Checks ThreatMiner for info for a given domain.
         FSBChck - Checks hybrid analysis for info for a given domain.
         UHChck - Checks URLhaus for info for a given domain."""
         self.domain = domain_name
         self.vt_response = int()
         self.vt_results = dict()
-        self.tc_rc = int()
-        self.tc_ips = list()
-        self.tm_mw = int()
         self.fsb_mw = int()
         self.fsb_ts_avg = int()
         self.uh_results = dict()
@@ -375,69 +270,6 @@ class DomainOSINT:
                 'response code is %d', (self.domain, response.status_code)
             )
         return response.status_code
-
-    def TCChck(self):
-        """Checks ThreatCrowd for info for a given domain.
-
-        Outputs:
-        tc_rc - ThreatCrowd resolution count.
-        status_code - The status code indicating whether or not the
-        lookup was successful."""
-        url = 'https://www.threatcrowd.org/searchApi/v2/domain/report/'
-        params = {'domain': self.domain}
-        data = get(url, params=params).json()
-        if data.get('response_code') == '1':
-            self.log.info(
-                'Successfully retrieved data from ThreatCrowd for ' +
-                '%s', self.domain
-            )
-            self.tc_rc = len(data.get('resolutions'))
-            for entry in data.get('resolutions'):
-                self.tc_ips.append({'ip_address': entry.get('ip_address'),
-                                   'r_time': entry.get('last_resolved')})
-            status_code = 200
-        else:
-            self.log.error(
-                'Unable to retrieve data from ThreatCrowd for %s', self.domain
-            )
-            status_code = 404
-        return status_code
-
-    def TMChck(self):
-        """Checks ThreatMiner for info for a given domain.
-
-        Outputs:
-        tm_mw - The count of how many malware samples were associated
-        with the domain name.
-        status_code - The HTTP response."""
-        url = 'https://api.threatminer.org/v2/domain.php'
-        params = {'q': self.domain, 'rt': '4'}
-        try:
-            response = get(url, params=params, timeout=3)
-            response.raise_for_status()
-            data = response.json()
-            if (response.status_code == 200 and
-                    data.get('status_code') == '200'):
-                self.log.info(
-                    'Successfully retrieved data for %s from ThreatMiner',
-                    self.domain
-                )
-                self.tm_mw = len(data.get('results'))
-        except HTTPError:
-            status_code = response.status_code
-            self.log.exception(
-                'Error retrieving data from ThreatMiner for %s. The ' +
-                'response code is %d', (self.domain, status_code)
-            )
-            return status_code
-        except Timeout:
-            self.log.exception(
-                'Timeout occured retrieving data from Threat Miner for ' +
-                '%s', self.domain
-            )
-            status_code = 408
-            return status_code
-        return int(data.get('status_code'))
 
     def FSBChck(self, fsb_api):
         """Checks hybrid analysis for info for a given domain.

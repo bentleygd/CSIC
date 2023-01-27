@@ -91,35 +91,6 @@ def main():
                   'problems.')
 
         try:
-            tc = ip_chck.TCChck()
-            print('*' * 32)
-            print('ThreatCrowd Results:')
-            if tc == 200:
-                print('Associated malware count: %d' % ip_chck.tc_mw)
-            elif tc == 500:
-                print('Error connecting to ThreatCrowd')
-            else:
-                print('No results found on ThreatCrowd')
-        except ConnectionError:
-            print('Unable to connect to ThreatCrowd due to network ' +
-                  'problems.')
-
-        try:
-            tm = ip_chck.TMChck()
-            print('*' * 32)
-            print('ThreatMiner Results:')
-            if tm == 200:
-                print('Associated malware count: %d' % ip_chck.tm_mw)
-            elif tm == 408:
-                print('Request timed out')
-            else:
-                print('ThreatMiner API status code: %d' % tm)
-                print('No results found on ThreatMiner.')
-        except ConnectionError:
-            print('Unable to connect to ThreatMiner due to network ' +
-                  'problems.')
-
-        try:
             fsb = ip_chck.FSBChck(fsb_api_key)
             if fsb == 200:
                 print('*' * 32)
@@ -227,37 +198,6 @@ def main():
                       'HTTP error code is %d\n' % vt)
         except ConnectionError:
             print('Unable to connect to VirusTotal due to network problems.')
-
-        try:
-            tc = dns_chck.TCChck()
-            print('*' * 32)
-            print('ThreatCrowd Results')
-            if tc == 200:
-                print('Resolve count: %d' % dns_chck.tc_rc)
-                for entry in dns_chck.tc_ips:
-                    print('IP: %s Resolved Date: %s' % (
-                          entry.get('ip_address'),
-                          entry.get('r_time')
-                          ))
-            else:
-                print('No results found on ThreatCrowd')
-        except ConnectionError:
-            print('Unable to connect to ThreatCrowd due to network ' +
-                  'problems')
-
-        try:
-            tm = dns_chck.TMChck()
-            print('*' * 32)
-            print('ThreatMiner Results')
-            if tm == 200:
-                print('Associated malware count: %d' % dns_chck.tm_mw)
-            elif tm == 408:
-                print('Request timed out.')
-            else:
-                print('ThreatMiner response code: %d' % tm)
-                print('No results found on ThreatMiner.')
-        except ConnectionError:
-            print('Unable to connect to ThreatMiner due to network problems.')
 
         try:
             fsb = dns_chck.FSBChck(fsb_api_key)
