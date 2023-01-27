@@ -92,31 +92,6 @@ def main():
                   'problems.')
 
         try:
-            tc = ip_chck.TCChck()
-            if tc == 200:
-                tc_mail = 'Associated malware count: %d\n' % ip_chck.tc_mw
-            elif tc == 500:
-                tc_mail = 'Error when connecting to ThreatCrowd\n'
-            else:
-                tc_mail = 'No results found on ThreatCrowd\n'
-        except ConnectionError:
-            print('Unable to connect to ThreatCrowd due to network ' +
-                  'problems.')
-
-        try:
-            tm = ip_chck.TMChck()
-            if tm == 200:
-                tm_mail = 'Associated malware count: %d\n' % ip_chck.tm_mw
-            elif tm == 408:
-                tm_mail = 'Request timed out.\n'
-            else:
-                tm_mail = ('HTTP response code: %d\n' +
-                           'No results found on ThreatMiner.\n') % tm
-        except ConnectionError:
-            print('Unable to connect to ThreatMiner due to network ' +
-                  'problems.')
-
-        try:
             fsb = ip_chck.FSBChck(fsb_api_key)
             if fsb == 200:
                 fsb_mail = 'Associated malware count: %d\n' % ip_chck.fsb_mw
@@ -169,12 +144,6 @@ def main():
                         '*' * 32 + '\n' +
                         'VT Results:\n' +
                         vt_mail +
-                        '*' * 32 + '\n' +
-                        'Threat Crowd Results:\n' +
-                        tc_mail +
-                        '*' * 32 + '\n' +
-                        'ThreatMiner Results:\n' +
-                        tm_mail +
                         '*' * 32 + '\n' +
                         'FalconSandBox Results:\n' +
                         fsb_mail +
@@ -241,35 +210,6 @@ def main():
             print('Unable to connect to VirusTotal due to network problems.')
 
         try:
-            tc = dns_chck.TCChck()
-            if tc == 200:
-                tc_mail = 'Resolve count: %d\n' % (dns_chck.tc_rc)
-                for entry in dns_chck.tc_ips:
-                    tc_mail = tc_mail + 'IP: %s Resolved Date: %s\n' % (
-                              entry.get('ip_address'),
-                              entry.get('r_time')
-                              )
-            else:
-                tc_mail = 'No results found on ThreatCrowd\n'
-        except ConnectionError:
-            print('Unable to connect to ThreatCrowd due to network ' +
-                  'problems')
-
-        try:
-            tm = dns_chck.TMChck()
-            if tm == 200:
-                tm_mail = 'Associated malware count: %d\n' % dns_chck.tm_mw
-            elif tm == 408:
-                print('Request tiimed out.')
-            elif tm == 500:
-                print('Received HTTP 500 error.')
-            else:
-                tm_mail = ('HTTP respone code: %d' +
-                           'No results found on ThreatMiner.\n') % tm
-        except ConnectionError:
-            print('Unable to connect to ThreatMiner due to network problems.')
-
-        try:
             fsb = dns_chck.FSBChck(fsb_api_key)
             if fsb == 200:
                 fsb_mail = 'Related sample count: %d\n' % dns_chck.fsb_mw
@@ -304,12 +244,6 @@ def main():
                          '*' * 32 + '\n' +
                          'VT Results:\n' +
                          vt_mail +
-                         '*' * 32 + '\n' +
-                         'Threat Crowd Results:\n' +
-                         tc_mail +
-                         '*' * 32 + '\n' +
-                         'ThreatMiner Results:\n' +
-                         tm_mail +
                          '*' * 32 + '\n' +
                          'FalconSandBox Results:\n' +
                          fsb_mail +
