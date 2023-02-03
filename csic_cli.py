@@ -4,7 +4,6 @@ from logging import basicConfig, INFO, getLogger
 
 from requests import ConnectionError
 
-from libs.coreutils import hash_file
 from libs import validate
 from libs import osintchck
 
@@ -39,6 +38,7 @@ def main():
     vt_api_key = config['API']['vt']
     fsb_api_key = config['API']['fsb']
     adb_api_key = config['API']['aipdb']
+    otx_api_key = config['API']['otx']
 
     # Looking for IP info.
     if args.ip:
@@ -142,6 +142,20 @@ def main():
         else:
             print('%d response code from Abuse IP DB API' % adb)
 
+        try:
+            otx = ip_chck.OTXCheck(otx_api_key)
+            print('*' * 32)
+            print('AlienVault OTX:')
+            if otx == 200:
+                otx_data = ip_chck.otx_results
+                print('AlienVault IP Reputation: %d' % otx_data['reputation'])
+                print('AlienVault Pulse Count: %d' % otx_data['pulse_count'])
+                print('Country: %s' % otx_data['country'])
+            else:
+                print('%d response code from OTX.' % otx)
+        except ConnectionError:
+            print('Unable to connect to OTX due to network problems.')
+
     # Looking for domain info.
     if args.dns:
         if not validate.validateDN(args.indicator):
@@ -216,6 +230,20 @@ def main():
                   'problems.')
 
         try:
+            otx = dns_chck.OTXCheck(otx_api_key)
+            if otx == 200:
+                print('*' * 32)
+                print('AlienVault OTX Results:')
+                print('AlienVault pulse count: %d' %
+                      dns_chck.otx_results['pulse_count'])
+                print('AlienVault OTX Malware Count: %d' %
+                      dns_chck.otx_results['malware_count'])
+            else:
+                print('%d response from AlienVault OTX' % otx)
+        except ConnectionError:
+            print('Unable to connect to OTX due to network problems.')
+
+        try:
             urlh = dns_chck.UHChck()
             print('*' * 32)
             print('URLHaus Results')
@@ -237,16 +265,6 @@ def main():
 
     # Looking for URL related info.
     if args.url:
-        if not validate.validateURL(args.indicator):
-            log.error('URL %s failed input validation.', args.indicator)
-            exit(1)
-        domain = args.indicator.split('/')[2]
-        if not validate.validateDN(domain):
-            print('Domain name is not compliant with RFC 1035.')
-            exit(1)
-            log.error(
-                'Domain in URL %s failed input validation.', args.indicator
-            )
         u_chck = osintchck.URLOSINT(args.indicator)
 
         try:
@@ -297,12 +315,22 @@ def main():
                 print('URLHaus status: %s' % urlh)
         except ConnectionError:
             print('Unable to connect to URL Haus due to network problems')
+
+        try:
+            otx = u_chck.OTXCheck(otx_api_key)
+            print('*' * 32)
+            print('AlienVault OTX Results:')
+            if otx == 200:
+                print('OTX Pulse Count: %d' % u_chck.otx_results)
+            else:
+                print('OTX respones code: %s' % otx)
+        except ConnectionError:
+            print('Unable to connect to OTX due to network problems')
         log.debug('Finished retrieving URL CSI for %s', args.indicator)
 
     # Looking for file realted info.
     if args.file:
-        file_hash = hash_file(args.indicator)
-        print('The hash we are looking for is below.\n%s' % file_hash)
+        file_hash = args.indicator
         f_chck = osintchck.FileOSINT(file_hash)
 
         try:
@@ -343,6 +371,22 @@ def main():
         except ConnectionError:
             print('Unable to connect to HybridAnalysis due to network ' +
                   'problems.')
+
+        try:
+            otx = f_chck.OTXCheck(otx_api_key)
+            print('*' * 32)
+            print('AlienVault OTX Results:')
+            if otx == 200:
+                print('OTX Pulse Count: %d' % f_chck.otx_results['p_count'])
+                if f_chck.otx_results['m_families'] is not None:
+                    print('OTX Malware Families: %s' %
+                          f_chck.otx_results['m_families'])
+                else:
+                    print('OTX Malware Families: None')
+            else:
+                print('OTX respones code: %s' % otx)
+        except ConnectionError:
+            print('Unable to connect to OTX due to network problems')
         log.debug(
             'Finished retrieving file related CSI for %s', args.indicator
         )

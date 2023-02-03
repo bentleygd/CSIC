@@ -28,16 +28,3 @@ def validateDN(domain_name):
         return True
     else:
         return False
-
-
-def validateURL(url):
-    """Takes a string input and returns true if it looks like a valid URL."""
-    # Checking for recommend maximum length.
-    if not len(url) > 2048:
-        if not match(r'https:|http:', url):
-            print('URL is not a HTTP scheme.')
-            return False
-        return True
-    else:
-        print('URL lenght exceeds browser maximum length.')
-        return False
