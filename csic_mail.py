@@ -5,7 +5,7 @@ from logging import basicConfig, INFO, getLogger
 
 from requests import ConnectionError
 
-from libs.coreutils import hash_file, mail_send
+from libs.coreutils import mail_send
 from libs import validate
 from libs import osintchck
 
@@ -334,7 +334,7 @@ def main():
 
     # Looking for file realted info.
     if args.file:
-        file_hash = hash_file(args.indicator)
+        file_hash = args.indicator
         f_chck = osintchck.FileOSINT(file_hash)
 
         try:
