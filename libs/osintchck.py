@@ -241,11 +241,17 @@ class IPOSINT:
                 '%d response received from OTX' % response.status_code
             )
         response_data = response.json()
-        self.otx_results = {
-            'country': response_data['country_name'],
-            'pulse_count': response_data['pulse_info']['count'],
-            'reputation': response_data['reputation']
-        }
+        if 'country_name' in response_data:
+            self.otx_results = {
+                'country': response_data['country_name'],
+                'pulse_count': response_data['pulse_info']['count'],
+                'reputation': response_data['reputation']
+            }
+        else:
+            self.otx_results = {
+                'pulse_count': response_data['pulse_info']['count'],
+                'reputation': response_data['reputation']
+            }
         return response.status_code
 
 
