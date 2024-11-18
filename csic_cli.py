@@ -2,8 +2,6 @@ from argparse import ArgumentParser
 from configparser import ConfigParser
 from logging import basicConfig, INFO, getLogger
 
-from requests import ConnectionError
-
 from libs import validate
 from libs import osintchck
 
