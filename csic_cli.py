@@ -2,8 +2,6 @@ from argparse import ArgumentParser
 from configparser import ConfigParser
 from logging import basicConfig, INFO, getLogger
 
-from requests import ConnectionError
-
 from libs import validate
 from libs import osintchck
 
@@ -148,9 +146,25 @@ def main():
             print('AlienVault OTX:')
             if otx == 200:
                 otx_data = ip_chck.otx_results
-                print('AlienVault IP Reputation: %d' % otx_data['reputation'])
-                print('AlienVault Pulse Count: %d' % otx_data['pulse_count'])
-                print('Country: %s' % otx_data['country'])
+                if 'country' in otx_data:
+                    print(
+                        'AlienVault IP Reputation: %d'
+                        % otx_data['reputation']
+                    )
+                    print(
+                        'AlienVault Pulse Count: %d'
+                        % otx_data['pulse_count']
+                    )
+                    print('Country: %s' % otx_data['country'])
+                else:
+                    print(
+                        'AlienVault IP Reputation: %d'
+                        % otx_data['reputation']
+                    )
+                    print(
+                        'AlienVault Pulse Count: %d'
+                        % otx_data['pulse_count']
+                    )
             else:
                 print('%d response code from OTX.' % otx)
         except ConnectionError:

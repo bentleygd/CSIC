@@ -1,5 +1,6 @@
-from requests import get, post
 from logging import getLogger
+
+from requests import get, post
 from requests.exceptions import Timeout, HTTPError
 
 from libs.validate import validateIP
@@ -60,7 +61,7 @@ class IPOSINT:
         by VirusTotal."""
         url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
         params = {'apikey': vt_api, 'ip': self.ip}
-        response = get(url, params=params)
+        response = get(url, params=params, timeout=5)
         if response.status_code == 200:
             self.log.info(
                 'Succesfully retrieved data from VirusTotal for %s', self.ip
@@ -105,7 +106,7 @@ class IPOSINT:
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'host': self.ip}
-        response = post(url, headers=headers, data=data)
+        response = post(url, headers=headers, data=data, timeout=5)
         if response.status_code == 200:
             self.log.info(
                 'Successfully retrieved data from hybrid-analysis ' +
@@ -131,7 +132,7 @@ class IPOSINT:
         response.status_code - The HTTP response code returned by the
         Talos website."""
         url = 'https://talosintelligence.com/documents/ip-blacklist'
-        response = get(url)
+        response = get(url, timeout=5)
         data = response.text.split('\n')
         if self.ip in data:
             self.tbl_status = 'block listed IP'
@@ -154,7 +155,7 @@ class IPOSINT:
         query_status - The status code returned by the URLHause API."""
         url = 'https://urlhaus-api.abuse.ch/v1/host/'
         data = {'host': self.ip}
-        response = post(url, data=data).json()
+        response = post(url, data=data, timeout=5).json()
         if response.get('query_status') == 'ok':
             self.log.info(
                 'Successfully retrieved data from URLHaus for %s', self.ip
@@ -196,7 +197,7 @@ class IPOSINT:
             'MaxAgeInDays': '30'
         }
         headers = {'Accept': 'application/json', 'Key': aid_key}
-        response = get(url, headers=headers, params=params)
+        response = get(url, headers=headers, params=params, timeout=5)
         try:
             response.raise_for_status
         except HTTPError:
@@ -232,7 +233,7 @@ class IPOSINT:
         host = 'https://otx.alienvault.com'
         url = '/api/v1/indicators/IPv4/' + self.ip + '/general'
         headers = {'X-OTX-API-KEY': otx_key}
-        response = get(host + url, headers=headers)
+        response = get(host + url, headers=headers, timeout=5)
         # Checking to see if the request was successful.
         try:
             response.raise_for_status
@@ -241,11 +242,17 @@ class IPOSINT:
                 '%d response received from OTX' % response.status_code
             )
         response_data = response.json()
-        self.otx_results = {
-            'country': response_data['country_name'],
-            'pulse_count': response_data['pulse_info']['count'],
-            'reputation': response_data['reputation']
-        }
+        if 'country_name' in response_data:
+            self.otx_results = {
+                'country': response_data['country_name'],
+                'pulse_count': response_data['pulse_info']['count'],
+                'reputation': response_data['reputation']
+            }
+        else:
+            self.otx_results = {
+                'pulse_count': response_data['pulse_info']['count'],
+                'reputation': response_data['reputation']
+            }
         return response.status_code
 
 
@@ -297,7 +304,7 @@ class DomainOSINT:
         the VT API."""
         url = 'https://www.virustotal.com/vtapi/v2/domain/report'
         params = {'apikey': vt_api, 'domain': self.domain}
-        response = get(url, params=params)
+        response = get(url, params=params, timeout=5)
         if response.status_code == 200:
             self.log.info(
                 'Successfully retrieved data from VirusTotal ' +
@@ -342,7 +349,7 @@ class DomainOSINT:
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'domain': self.domain}
-        response = post(url, headers=headers, data=data)
+        response = post(url, headers=headers, data=data, timeout=5)
         if response.status_code == 200:
             self.log.info(
                 'Successfully retrieved data from hybrid analysis for ' +
@@ -377,7 +384,7 @@ class DomainOSINT:
         """
         url = 'https://urlhaus-api.abuse.ch/v1/host/'
         data = {'host': self.domain}
-        response = post(url, data=data).json()
+        response = post(url, data=data, timeout=5).json()
         if response.get('query_status') == 'ok':
             self.log.info(
                 'Successfully retrieved info from URLHaus for ' +
@@ -420,7 +427,7 @@ class DomainOSINT:
         host = 'https://otx.alienvault.com'
         g_url = '/api/v1/indicators/domain/' + self.domain + '/general'
         headers = {'X-OTX-API-KEY': otx_key}
-        g_response = get(host + g_url, headers=headers)
+        g_response = get(host + g_url, headers=headers, timeout=5)
         # Checking to see if the request was successful.
         try:
             g_response.raise_for_status
@@ -434,7 +441,7 @@ class DomainOSINT:
         pulse_count = general_data['pulse_info']['count']
         # Setting up OTX rqeuest for domain malware data
         m_url = '/api/v1/indicators/domain/' + self.domain + '/malware'
-        m_response = get(host + m_url, headers=headers)
+        m_response = get(host + m_url, headers=headers, timeout=5)
         # Checking to see if response was successful
         try:
             m_response.raise_for_status
@@ -499,7 +506,7 @@ class URLOSINT:
         VirusTotal API."""
         url = 'https://www.virustotal.com/vtapi/v2/url/report'
         params = {'apikey': vt_api, 'resource': self.b_url}
-        response = get(url, params=params)
+        response = get(url, params=params, timeout=5)
         if response.status_code == 200:
             self.log.info(
                 'Successfully retrieved data for %s from VirusTotal',
@@ -536,7 +543,7 @@ class URLOSINT:
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'url': self.b_url}
-        response = post(url, headers=headers, data=data)
+        response = post(url, headers=headers, data=data, timeout=5)
         if response.status_code == 200:
             self.log.info(
                 'Successfully retrieved info from hybrid analysis for %s',
@@ -562,7 +569,7 @@ class URLOSINT:
         """
         url = 'https://urlhaus-api.abuse.ch/v1/url/'
         data = {'url': self.b_url}
-        response = post(url, data=data).json()
+        response = post(url, data=data, timeout=5).json()
         if response.get('query_status') == 'ok':
             self.log.info(
                 'Successfully retrieved info for %s from abuse.ch', self.b_url
@@ -603,7 +610,7 @@ class URLOSINT:
         host = 'https://otx.alienvault.com'
         url = '/api/v1/indicators/url/' + self.b_url + '/general'
         headers = {'X-OTX-API-KEY': otx_key}
-        response = get(host + url, headers=headers)
+        response = get(host + url, headers=headers, timeout=5)
         # Checking to see if the request was successful.
         try:
             response.raise_for_status
@@ -664,7 +671,7 @@ class FileOSINT:
         Total API."""
         url = 'https://www.virustotal.com/vtapi/v2/file/report'
         params = {'apikey': vt_api, 'resource': self.hash}
-        response = get(url, params=params)
+        response = get(url, params=params, timeout=5)
         if response.status_code == 200:
             self.log.info(
                 'Successfully retrieved info from VT for file hash: %s',
@@ -704,7 +711,7 @@ class FileOSINT:
         url = 'https://www.hybrid-analysis.com/api/v2/search/hash'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'hash': self.hash}
-        response = post(url, headers=headers, data=data)
+        response = post(url, headers=headers, data=data, timeout=5)
         if response.status_code == 200:
             self.log.info(
                 'Successfully retrieved info from hybrid analysis for '
@@ -746,7 +753,7 @@ class FileOSINT:
         host = 'https://otx.alienvault.com'
         url = '/api/v1/indicators/file/' + self.hash + '/general'
         headers = {'X-OTX-API-KEY': otx_key}
-        response = get(host + url, headers=headers)
+        response = get(host + url, headers=headers, timeout=5)
         # Checking to see if the request was successful.
         try:
             response.raise_for_status
@@ -844,7 +851,7 @@ class OSINTBlock():
             '/blockrules/compromised-ips.txt'
         )
         try:
-            response = get(url)
+            response = get(url, timeout=5)
             data = response.text
             for entry in data.split('\n'):
                 if not entry.startswith('#') and validateIP(entry):
@@ -874,7 +881,7 @@ class OSINTBlock():
         to emerging threats."""
         url = 'https://sslbl.abuse.ch/blacklist/sslipblacklist.txt'
         try:
-            response = get(url)
+            response = get(url, timeout=5)
             data = response.text
             for entry in data.split('\r\n'):
                 if not entry.startswith('#') and validateIP(entry):
@@ -904,7 +911,7 @@ class OSINTBlock():
         to emerging threats."""
         url = 'https://talosintelligence.com/documents/ip-blacklist'
         try:
-            response = get(url)
+            response = get(url, timeout=5)
             data = response.text
             for entry in data.split('\n'):
                 if not entry.startswith('#') and validateIP(entry):
@@ -929,7 +936,7 @@ class OSINTBlock():
         blocklist.de"""
         url = 'https://lists.blocklist.de/lists/all.txt'
         try:
-            response = get(url)
+            response = get(url, timeout=5)
             data = response.text
             for entry in data.split('\n'):
                 if not entry.startswith('#') and validateIP(entry):
@@ -961,7 +968,7 @@ class OSINTBlock():
             r'honeypot_ssh_blacklist_2019.txt'
         )
         try:
-            response = get(url)
+            response = get(url, timeout=5)
             data = response.text
             for entry in data.split('\n'):
                 if not entry.startswith('#') and validateIP(entry):

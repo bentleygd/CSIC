@@ -1,7 +1,7 @@
 # CSIC
 Python scripts that automate checking different crowd-source threat intelligence feeds to determine if something is evil.
 
-[![Known Vulnerabilities](https://snyk.io/test/github/bentleygd/CSIC/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/bentleygd/CSIC?targetFile=requirements.txt)![Lint](https://github.com/bentleygd/CSIC/workflows/Lint/badge.svg)
+[![Known Vulnerabilities](https://snyk.io/test/github/bentleygd/CSIC/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/bentleygd/CSIC?targetFile=requirements.txt)![Lint](https://github.com/bentleygd/CSIC/workflows/Lint/badge.svg) ![CodeQL](https://github.com/bentleygd/CSIC/workflows/CodeQL/badge.svg)
 
 # Motivation
 The purpose of this project is to reduce the amount of time that is used during an investigation on whether or not something is "bad".  The scripts can also be used to empower lower tier support teams (i.e., help desk personnel) with a quick and efficient way of determing if something is "bad" when they communicate with users or higher tier support personnel.
@@ -58,14 +58,14 @@ The default help option is self-explanatory.
 >  -F, --file  Check for File info.<br>
 
 # Example Configuration
-```python
+```
 # This configuration uses configparser
 [API]
 vt = viurs_total_api_key
 fsb = hybrid_analysis_api_key
 aipdb = abuse_ip_db_api_key
 otx = alienvault_otx_api_key
-
+ 
 [mail]
 server = somewhere.example.com
 rcpts = someone@example.com
