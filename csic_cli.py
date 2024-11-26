@@ -1,3 +1,7 @@
+"""
+This module is a script that is a crowd sourced threat intelligence
+aggregator.  It has no classes and calls code from libs/osintchck.
+"""
 from argparse import ArgumentParser
 from configparser import ConfigParser
 from logging import basicConfig, INFO, getLogger
@@ -7,6 +11,7 @@ from libs import osintchck
 
 
 def main():
+    """Doing the thing."""
     # Setting up an argument parser.
     a_parse = ArgumentParser(description='Open Threat Intel checker.')
     a_parse.add_argument('-I', '--ip', action='store_true',
@@ -83,7 +88,7 @@ def main():
                     print('Nothing found on VirusTotal.')
             else:
                 print('Unable to successfully connnect to VirusTotal. ' +
-                      'The HTTP error code is %d\n') % vt
+                      'The HTTP error code is %d\n'), vt
         except ConnectionError:
             print('Unable to connect to VirusTotal due to network ' +
                   'problems.')

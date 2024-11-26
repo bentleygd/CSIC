@@ -1,7 +1,19 @@
+"""
+This module retrieves crowd sourced threat intelligence data from
+multiple sources via API calls.
+
+Classes:
+IPOSINT - Retrieves crowd sourced threat intelligence data about IP addresses.
+DomainOSINT - Retrieves crowd sourced threat intelligence data about domain
+names.
+URLOSINT - Retrieves crowd sourced threat intelligence data about URLs.
+FileOSINT - Retrieves crowd sourced threat intelligence data about files.
+OSINTBlock - Generated block lists based on gathered CSINT data.
+"""
 from logging import getLogger
 
 from requests import get, post
-from requests.exceptions import Timeout, HTTPError
+from requests.exceptions import Timeout, HTTPError, SSLError
 
 from libs.validate import validateIP
 
@@ -106,20 +118,28 @@ class IPOSINT:
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'host': self.ip}
-        response = post(url, headers=headers, data=data, timeout=5)
-        if response.status_code == 200:
-            self.log.info(
-                'Successfully retrieved data from hybrid-analysis ' +
-                'for %s', self.ip
-            )
-            self.fsb_mw = response.json().get('count')
-        else:
-            self.log.error(
-                'Error when retrieving data from hybrid analysis for %s. ' +
-                'The HTTP response code is %s',
-                (self.ip, response.status_code)
-            )
-        return response.status_code
+        try:
+            response = post(url, headers=headers, data=data, timeout=5)
+            if response.status_code == 200:
+                self.log.info(
+                    'Successfully retrieved data from hybrid-analysis ' +
+                    'for %s', self.ip
+                )
+                self.fsb_mw = response.json().get('count')
+            else:
+                self.log.error(
+                    'Error when retrieving data from FSB for %s. ' +
+                    'The HTTP response code is %s',
+                    (self.ip, response.status_code)
+                )
+            status_code = 200
+        except Timeout:
+            self.log.error('Connection to Falcon Sandbox timed out.')
+            status_code = 408
+        except SSLError:
+            self.log.exception('SSL error when connecting to Falcon Sandbox')
+            status_code = 495
+        return status_code
 
     def TBLChck(self):
         """Checks to see if an IP is on the Talos block list.
@@ -202,14 +222,14 @@ class IPOSINT:
             response.raise_for_status
         except HTTPError:
             self.log.exception(
-                '%d response received from the AIDB' % response.status_code
+                '%d response received from the AIDB', response.status_code
             )
         data = response.json()['data']
         self.adb_results = {
            'report_count': data['totalReports'],
            'confidence_score': data['abuseConfidenceScore']
         }
-        self.log.info('Retrieved abuse IP DB info for %s' % self.ip)
+        self.log.info('Retrieved abuse IP DB info for %s', self.ip)
         return response.status_code
 
     def OTXCheck(self, otx_key):
@@ -239,7 +259,7 @@ class IPOSINT:
             response.raise_for_status
         except HTTPError:
             self.log.exception(
-                '%d response received from OTX' % response.status_code
+                '%d response received from OTX', response.status_code
             )
         response_data = response.json()
         if 'country_name' in response_data:
@@ -337,7 +357,7 @@ class DomainOSINT:
     def FSBChck(self, fsb_api):
         """Checks hybrid analysis for info for a given domain.
 
-        Keyword arugments:
+        Required Input:
         fsb_api - str(), The Falcon SandBox API key.
 
         Outputs:
@@ -349,27 +369,35 @@ class DomainOSINT:
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'domain': self.domain}
-        response = post(url, headers=headers, data=data, timeout=5)
-        if response.status_code == 200:
-            self.log.info(
-                'Successfully retrieved data from hybrid analysis for ' +
-                '%s', self.domain
-            )
-            self.fsb_mw = response.json().get('count')
-            if self.fsb_mw > 0:
-                ts = int()
-                for result in response.json().get('result'):
-                    if result.get('threat_score') is not None:
-                        ts = ts + result.get('threat_score')
-                    else:
-                        ts = 0
-                self.fsb_ts_avg = ts / len(response.json().get('result'))
-        else:
-            self.log.error(
-                'Unable to retrieve data from hybrid-analysis for ' +
-                '%s', self.domain
-            )
-        return response.status_code
+        try:
+            response = post(url, headers=headers, data=data, timeout=5)
+            if response.status_code == 200:
+                self.log.info(
+                    'Successfully retrieved data from hybrid analysis for ' +
+                    '%s', self.domain
+                )
+                self.fsb_mw = response.json().get('count')
+                if self.fsb_mw > 0:
+                    ts = int()
+                    for result in response.json().get('result'):
+                        if result.get('threat_score') is not None:
+                            ts = ts + result.get('threat_score')
+                        else:
+                            ts = 0
+                    self.fsb_ts_avg = ts / len(response.json().get('result'))
+            else:
+                self.log.error(
+                    'Unable to retrieve data from hybrid-analysis for ' +
+                    '%s', self.domain
+                )
+            status_code = response.status_code
+        except Timeout:
+            self.log.error('Connection to Falcon Sandbox timed out.')
+            status_code = 408
+        except SSLError:
+            self.log.exception('SSL error when connecting to Falcon Sandbox')
+            status_code = 495
+        return status_code
 
     def UHChck(self):
         """Checks URLhaus for info for a given domain.
@@ -433,7 +461,7 @@ class DomainOSINT:
             g_response.raise_for_status
         except HTTPError:
             self.log.exception(
-                '%d response received from OTX' % g_response.status_code
+                '%d response received from OTX', g_response.status_code
             )
         general_data = g_response.json()
         # Retaining the number of OTX pulses associated with the
@@ -447,7 +475,7 @@ class DomainOSINT:
             m_response.raise_for_status
         except HTTPError:
             self.log.exception(
-                '%d response received from OTX' % g_response.status_code
+                '%d response received from OTX', g_response.status_code
             )
         malware_data = m_response.json()
         # Retaining malware count
@@ -543,19 +571,27 @@ class URLOSINT:
         url = 'https://www.hybrid-analysis.com/api/v2/search/terms'
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'url': self.b_url}
-        response = post(url, headers=headers, data=data, timeout=5)
-        if response.status_code == 200:
-            self.log.info(
-                'Successfully retrieved info from hybrid analysis for %s',
-                self.b_url
-            )
-            self.fsb_mw = response.json().get('count')
-        else:
-            self.log.error(
-                'Unable to retrieve info from hybrid analysis. The HTTP ' +
-                'response code is %r.' % (response.status_code)
-            )
-        return response.status_code
+        try:
+            response = post(url, headers=headers, data=data, timeout=5)
+            if response.status_code == 200:
+                self.log.info(
+                    'Successfully retrieved info from hybrid analysis for %s',
+                    self.b_url
+                )
+                self.fsb_mw = response.json().get('count')
+            else:
+                self.log.error(
+                    'Unable to retrieve info from hybrid analysis. The HTTP ' +
+                    'response code is %r.', (response.status_code)
+                )
+            status_code = response.status_code
+        except Timeout:
+            self.log.error('Connection to Falcon Sandbox timed out.')
+            status_code = 408
+        except SSLError:
+            self.log.exception('SSL error when connecting to Falcon Sandbox')
+            status_code = 495
+        return status_code
 
     def UHChck(self):
         """Checks URLhaus for info for a given URL.
@@ -585,7 +621,7 @@ class URLOSINT:
         else:
             self.log.error(
                 'Unable to retrieve data from abuse.ch. The query ' +
-                'response is %s.' % (response.get('query_status'))
+                'response is %s.', (response.get('query_status'))
             )
         return response.get('query_status')
 
@@ -616,7 +652,7 @@ class URLOSINT:
             response.raise_for_status
         except HTTPError:
             self.log.exception(
-                '%d response received from OTX' % response.status_code
+                '%d response received from OTX', response.status_code
             )
         # Getting the pulse count from OTX.
         response_data = response.json()
@@ -659,7 +695,7 @@ class FileOSINT:
     def VTChck(self, vt_api):
         """Checks VirusTotal for info for a given file hash.
 
-        Keyword arguments:
+        Required Input:
         vt_api - The VirusTotal API key.
 
         Outputs:
@@ -698,7 +734,7 @@ class FileOSINT:
     def FSBChck(self, fsb_api):
         """Checks Hybrid Analysis for info for a given file hash.
 
-        Keyword arguments:
+        Required Input:
         fsb_api -  The Falcon Sandbox API key.
 
         Outputs:
@@ -712,25 +748,33 @@ class FileOSINT:
         headers = {'api-key': fsb_api, 'user-agent': 'Falcon'}
         data = {'hash': self.hash}
         response = post(url, headers=headers, data=data, timeout=5)
-        if response.status_code == 200:
-            self.log.info(
-                'Successfully retrieved info from hybrid analysis for '
-                'hash: %s', self.hash
-            )
-            if len(response.json()) > 0:
-                self.fsb_r_code = 1
-                self.fsb_results = {
-                    'verdict': response.json()[0].get('verdict'),
-                    'm_family': response.json()[0].get('vx_family')
-                }
+        try:
+            if response.status_code == 200:
+                self.log.info(
+                    'Successfully retrieved info from hybrid analysis for '
+                    'hash: %s', self.hash
+                )
+                if len(response.json()) > 0:
+                    self.fsb_r_code = 1
+                    self.fsb_results = {
+                        'verdict': response.json()[0].get('verdict'),
+                        'm_family': response.json()[0].get('vx_family')
+                    }
+                else:
+                    self.fsb_r_code = 0
             else:
-                self.fsb_r_code = 0
-        else:
-            self.log.error(
-                'Unable to retrieve file info from hybrid analysis for %s',
-                self.hash
-            )
-        return response.status_code
+                self.log.error(
+                    'Unable to retrieve file info from hybrid analysis for %s',
+                    self.hash
+                )
+            status_code = response.status_code
+        except Timeout:
+            self.log.error('Connection to Falcon Sandbox timed out.')
+            status_code = 408
+        except SSLError:
+            self.log.exception('SSL error when connecting to Falcon Sandbox')
+            status_code = 495
+        return status_code
 
     def OTXCheck(self, otx_key):
         """Retrieves general OTX data for the supplied file hash.
@@ -759,7 +803,7 @@ class FileOSINT:
             response.raise_for_status
         except HTTPError:
             self.log.exception(
-                '%d response received from OTX' % response.status_code
+                '%d response received from OTX', response.status_code
             )
         response_data = response.json()
         # Parsing response data
@@ -1009,9 +1053,9 @@ class OSINTBlock():
             response = get(url, headers=headers, params=params, timeout=10)
             response.raise_for_status
         except Timeout:
-            self.log.exception('Timeout occurred connecting to', url)
+            self.log.exception('Timeout occurred connecting to %s', url)
         except HTTPError:
-            self.log.exception('Non-200 response received from', url)
+            self.log.exception('Non-200 response received from %s', url)
         for ip in response.text.split('\n'):
             if validateIP(ip):
                 self.adb_bl.append(ip + '/32')

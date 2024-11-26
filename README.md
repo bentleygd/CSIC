@@ -76,4 +76,4 @@ path = path_to_file
 ```
 
 # Documentation
-See DOCs.md for more detailed documentation.
+See DOCs.md for code documentation.

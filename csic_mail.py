@@ -1,9 +1,10 @@
-#!/usr/bin/python3
+"""
+This module is a simple mailer for CSINT data gathered by the classes from
+libs/osintchck.
+"""
 from argparse import ArgumentParser
 from configparser import ConfigParser
 from logging import basicConfig, INFO, getLogger
-
-from requests import ConnectionError
 
 from libs.coreutils import mail_send
 from libs import validate
@@ -11,6 +12,7 @@ from libs import osintchck
 
 
 def main():
+    """Doing the thing."""
     # Setting up an argument parser.
     a_parse = ArgumentParser(description='Open Threat Intel checker.')
     a_parse.add_argument('-I', '--ip', action='store_true',
