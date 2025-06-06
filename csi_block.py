@@ -170,6 +170,8 @@ def main():
         log.error(
             '%d response code from Abuse IP DB', abuse_ip_response
         )
+    # Getting TOR exit nodes.
+    ip_block.get_tor_exits()
     # Consolidating the list and writing it to a file.
     auto_block_list = ip_block.generate_block_list()
     update_block_list(block_path, auto_block_list)
