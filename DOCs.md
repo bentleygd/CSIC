@@ -19,6 +19,7 @@ Initializes the IP_OSINT object with the provided IP address and sets up instanc
 - `uh_results` (`dict`): URLHaus results for the IP.
 - `adb_results` (`list`): AbuseIPDB results for the IP.
 - `otx_results` (`dict`): OTX results for the IP.
+- `tor_exit` (`list`): A list of TOR exit nodes.
 - `log` (`Logger`): Logger instance for logging API responses.
 
 ---
@@ -100,6 +101,23 @@ Retrieves reputation data for the provided IP address from AlienVault OTX.
 
 ---
 
+### `TORCheck(self)`
+Retrieves the list of TOR exit nodes from TOR and checks to see if an IP address is an exit node.
+
+#### Required Input:
+- **None**
+
+#### Outputs:
+- `tor_exit` (`list`): A list of TOR exit nodes.
+
+#### Returns:
+- `tor_status` (`bool`): Returns True if *self.ip* is in self.tor_exit.
+
+#### Exceptions:
+- `Exception`: Raised if there is a problem with connecting to TOR.
+
+---
+
 ## Example Usage:
 
 ```python
@@ -127,6 +145,13 @@ ip_osint.AIDBCheck(aid_key)
 # Check AlienVault OTX
 otx_key = "your_otx_api_key"
 ip_osint.OTXCheck(otx_key)
+
+# Check to see self.ip is a TOR exit node
+exit_node_check = ip_osint.TORCheck()
+if exit_node_check is True:
+  print('IP address is an exit node')
+else:
+  print('IP address is not an exit node')
 ```
 
 # DomainOSINT Class Documentation
