@@ -179,7 +179,7 @@ def main():
             tor = ip_chck.TORCheck()
             print('*' * 32)
             print('TOR Exit Node Check:')
-            if tor is True:
+            if tor:
                 print('%s is a TOR exit node' % ip_chck.ip)
             else:
                 print('%s is not a TOR exit node' % ip_chck.ip)
