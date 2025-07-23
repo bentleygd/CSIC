@@ -175,6 +175,17 @@ def main():
         except ConnectionError:
             print('Unable to connect to OTX due to network problems.')
 
+        try:
+            tor = ip_chck.TORCheck()
+            print('*' * 32)
+            print('TOR Exit Node Check:')
+            if tor:
+                print('%s is a TOR exit node' % ip_chck.ip)
+            else:
+                print('%s is not a TOR exit node' % ip_chck.ip)
+        except Exception:
+            print('Error retrieving TOR exit node list.')
+
     # Looking for domain info.
     if args.dns:
         if not validate.validateDN(args.indicator):
