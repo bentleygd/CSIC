@@ -76,7 +76,7 @@ class IPOSINT:
         response = get(url, params=params, timeout=5)
         if response.status_code == 200:
             self.log.info(
-                'Succesfully retrieved data from VirusTotal for %s', self.ip
+                f'Succesfully retrieved data from VirusTotal for {self.ip}'
             )
             data = response.json()
             self.vt_response = data.get('response_code')
@@ -122,15 +122,12 @@ class IPOSINT:
             response = post(url, headers=headers, data=data, timeout=5)
             if response.status_code == 200:
                 self.log.info(
-                    'Successfully retrieved data from hybrid-analysis ' +
-                    'for %s', self.ip
+                    f'Successfully retrieved data from hybrid-analysis for {self.ip}'
                 )
                 self.fsb_mw = response.json().get('count')
             else:
                 self.log.error(
-                    'Error when retrieving data from FSB for %s. ' +
-                    'The HTTP response code is %s',
-                    (self.ip, response.status_code)
+                    f'Error when retrieving data from FSB for {self.ip}. The HTTP response code is {response.status_code}'
                 )
             status_code = 200
         except Timeout:
@@ -164,8 +161,11 @@ class IPOSINT:
             self.log.error('Unable to retrieve Talos black list from Cisco.')
         return response.status_code
 
-    def UHChck(self):
+    def UHChck(self, abusech_api):
         """Checks URLHaus for info for a given IP.
+
+        Required Input:
+        abusech_api - API key from URLHaus.
 
         Outputs:
         uh_results - A dictionary containing info about a given IP
@@ -175,7 +175,8 @@ class IPOSINT:
         query_status - The status code returned by the URLHause API."""
         url = 'https://urlhaus-api.abuse.ch/v1/host/'
         data = {'host': self.ip}
-        response = post(url, data=data, timeout=5).json()
+        headers = {'Auth-Key': abusech_api}
+        response = post(url, data=data, headers=headers, timeout=5).json()
         if response.get('query_status') == 'ok':
             self.log.info(
                 'Successfully retrieved data from URLHaus for %s', self.ip
@@ -399,8 +400,11 @@ class DomainOSINT:
             status_code = 495
         return status_code
 
-    def UHChck(self):
+    def UHChck(self, abusech_api):
         """Checks URLhaus for info for a given domain.
+
+        Required Input:
+        abusech_api - str(), The API key from URL Haus.
 
         Outputs:
         self.uh_results - dict(), The results from URLHaus regarding a
@@ -412,7 +416,8 @@ class DomainOSINT:
         """
         url = 'https://urlhaus-api.abuse.ch/v1/host/'
         data = {'host': self.domain}
-        response = post(url, data=data, timeout=5).json()
+        headers = {'Auth-Key': abusech_api}
+        response = post(url, data=data, headers=headers, timeout=5).json()
         if response.get('query_status') == 'ok':
             self.log.info(
                 'Successfully retrieved info from URLHaus for ' +
@@ -593,8 +598,11 @@ class URLOSINT:
             status_code = 495
         return status_code
 
-    def UHChck(self):
+    def UHChck(self, abusech_api):
         """Checks URLhaus for info for a given URL.
+
+        Required Input:
+        abusech_api - str(), The API key from URL Haus.
 
         Outputs:
         uh_results - dict(), The results returned by the URL Haus API.
@@ -604,8 +612,9 @@ class URLOSINT:
         returned by the URLHaus API.
         """
         url = 'https://urlhaus-api.abuse.ch/v1/url/'
+        headers = {'Auth-Key': abusech_api}
         data = {'url': self.b_url}
-        response = post(url, data=data, timeout=5).json()
+        response = post(url, data=data, headers=headers, timeout=5).json()
         if response.get('query_status') == 'ok':
             self.log.info(
                 'Successfully retrieved info for %s from abuse.ch', self.b_url
@@ -850,7 +859,6 @@ class OSINTBlock():
         Instance variables:
         et_ch - The list of compromised hosts from Emerging Threts.
         ssl_bl - The SSL BL from abuse.ch of known botnet C2 hosts.
-        tbl - Cisco Talos' block list.
         bl_de - Blocklist.de's blocklist that is updated every 48
         hours.
         nt_ssh_bl - Nothink.org's SSH brute force source block list.
@@ -863,7 +871,6 @@ class OSINTBlock():
         threats.
         get_abuse_sslbl - Retrieves the known botnet C2 list from
         abuse.ch.
-        get_talos_list - Retrieves the black list from Talos.
         get_blde_list - Retriees the black list from blocklist.de
         get_nt_ssh_bl - Retrieves the black list of ssh brute force
         servers from nothink.org
@@ -873,7 +880,6 @@ class OSINTBlock():
         a list of unique IPs to block."""
         self.et_ch = []
         self.ssl_bl = []
-        self.tbl = []
         self.bl_de = []
         self.nt_ssh_bl = []
         self.adb_bl = []
@@ -941,31 +947,6 @@ class OSINTBlock():
             self.log.exception(
                 'Unable to retrive botnet C2 list from URLHaus.'
             )
-        return response.status_code
-
-    def get_talos_list(self):
-        """Retrieves the IP block list from Cisco Talos
-
-        Outputs:
-        self.ssl_bl - A list of IP addresses that Talos has determined
-        are persona non gratta.
-
-        Returns:
-        response.status_code - The HTTP staus code of the request made
-        to emerging threats."""
-        url = 'https://talosintelligence.com/documents/ip-blacklist'
-        try:
-            response = get(url, timeout=5)
-            data = response.text
-            for entry in data.split('\n'):
-                if not entry.startswith('#') and validateIP(entry):
-                    self.tbl.append(entry + '/32')
-            self.log.info('Succesfully retrieved Talos black list.')
-            self.log.debug(
-                '%d hosts are in the Talos black list', len(self.tbl)
-            )
-        except Exception:
-            self.log.exception('Unable to retrieve block list from Talos.')
         return response.status_code
 
     def get_blde_list(self):
@@ -1072,7 +1053,6 @@ class OSINTBlock():
         osint_lists = [
             self.nt_ssh_bl,
             self.ssl_bl,
-            self.tbl,
             self.bl_de,
             self.et_ch,
             self.adb_bl
@@ -1088,8 +1068,6 @@ class OSINTBlock():
                 write_item = unique_item + ' #ABL Nothink SSH Ban list.'
             if unique_item in self.ssl_bl:
                 write_item = unique_item + ' #ABL URLHaus Botnet C2.'
-            if unique_item in self.tbl:
-                write_item = unique_item + ' #ABL Talos block list IP.'
             if unique_item in self.bl_de:
                 write_item = unique_item + ' #ABL Blocklist.de Ban list.'
             if unique_item in self.et_ch:
