@@ -145,12 +145,6 @@ def main():
         log.error(
             '%d response code from abuse.ch', abuse_ch_response
         )
-    # Cisco Talos IP block list.
-    cisco_response = ip_block.get_talos_list()
-    if cisco_response != 200:
-        log.error(
-            '%d response code from Cisco Talos', cisco_response
-        )
     # Blocklist.de ban list.
     blocklist_de_response = ip_block.get_blde_list()
     if blocklist_de_response != 200:
@@ -165,7 +159,7 @@ def main():
             '%d response code from Nothink.org', nothink_response
         )
     # AbuseIP DB's list of IPs that have an abuse score of 100 (default).
-    abuse_ip_response = ip_block.get_adb_bl(config['api']['aipdb'])
+    abuse_ip_response = ip_block.get_adb_bl(config['API']['aipdb'])
     if abuse_ip_response != 200:
         log.error(
             '%d response code from Abuse IP DB', abuse_ip_response

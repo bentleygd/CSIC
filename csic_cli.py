@@ -42,6 +42,7 @@ def main():
     fsb_api_key = config['API']['fsb']
     adb_api_key = config['API']['aipdb']
     otx_api_key = config['API']['otx']
+    abuse_ch_key = config['API']['abusech']
 
     # Looking for IP info.
     if args.ip:
@@ -52,7 +53,6 @@ def main():
             )
             exit(1)
         ip_chck = osintchck.IPOSINT(args.indicator)
-
         try:
             log.debug('Retrieving CSI for %s', args.indicator)
             vt = ip_chck.VTChck(vt_api_key)
@@ -88,7 +88,7 @@ def main():
                     print('Nothing found on VirusTotal.')
             else:
                 print('Unable to successfully connnect to VirusTotal. ' +
-                      'The HTTP error code is %d\n'), vt
+                      'The HTTP error code is ', vt)
         except ConnectionError:
             print('Unable to connect to VirusTotal due to network ' +
                   'problems.')
@@ -107,19 +107,7 @@ def main():
                   'problems.')
 
         try:
-            tbl = ip_chck.TBLChck()
-            print('*' * 32)
-            print('Talos Blacklist Check:')
-            if tbl == 200:
-                print('Blacklist status: %s' % ip_chck.tbl_status)
-            else:
-                print('Talos Return Code: %d' % tbl)
-        except ConnectionError:
-            print('Unable to retrieve the Talos IP blacklist due to ' +
-                  'network problems.')
-
-        try:
-            urlh = ip_chck.UHChck()
+            urlh = ip_chck.UHChck(abuse_ch_key)
             print('*' * 32)
             print('URLHaus Results:')
             if urlh == 'ok':
@@ -274,7 +262,7 @@ def main():
             print('Unable to connect to OTX due to network problems.')
 
         try:
-            urlh = dns_chck.UHChck()
+            urlh = dns_chck.UHChck(abuse_ch_key)
             print('*' * 32)
             print('URLHaus Results')
             if urlh == 'ok':
@@ -296,7 +284,6 @@ def main():
     # Looking for URL related info.
     if args.url:
         u_chck = osintchck.URLOSINT(args.indicator)
-
         try:
             vt = u_chck.VTChck(vt_api_key)
             log.debug('Retrieving URL CSI for %s', args.indicator)
@@ -331,7 +318,7 @@ def main():
                   'network problems.')
 
         try:
-            urlh = u_chck.UHChck()
+            urlh = u_chck.UHChck(abuse_ch_key)
             print('*' * 32)
             print('URLHaus Results:')
             if urlh == 'ok':
