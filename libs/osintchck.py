@@ -14,6 +14,7 @@ from logging import getLogger
 
 from requests import get, post
 from requests.exceptions import Timeout, HTTPError, SSLError
+from stem.descriptor import remote as tor_remote
 
 from libs.validate import validateIP
 
@@ -38,6 +39,7 @@ class IPOSINT:
         uh_results - URLHaus results for the IP.
         adb_results - AbuseIPDB results for the IP.
         otx_results - OTX results for the IP.
+        tor_exit - list(), A list of TOR exit nodes.
         log - Logging call.
 
         Methods:
@@ -47,7 +49,9 @@ class IPOSINT:
         TBLChck - Checks to see if an IP is on the Talos block list.
         UHChck - Checks URLHaus for info for a given IP.
         AIDBChck - Checks the AbuseIP database for a given IP.
-        OTXCheck - Retrieves data from AlienVault OTX for a given IP."""
+        OTXCheck - Retrieves data from AlienVault OTX for a given IP.
+        TORCheck - Retrives the TOR exit node list and cheks to see if
+        an IP address is a TOR exit node."""
         self.ip = ip
         self.vt_results = dict()
         self.vt_response = int()
@@ -56,6 +60,7 @@ class IPOSINT:
         self.uh_results = dict()
         self.adb_results = list()
         self.otx_results = dict()
+        self.tor_exit = list()
         self.log = getLogger('csic')
 
     def VTChck(self, vt_api):
@@ -275,6 +280,43 @@ class IPOSINT:
                 'reputation': response_data['reputation']
             }
         return response.status_code
+    
+    def TORCheck(self):
+        """Checks if an IP address is a TOR Exit node.
+
+        Required Input:
+        None.
+
+        Output:
+        tor_ext - list(), A list of IP addresses tthat are TOR exit
+        nodes.  This is retrieved directly from TOR.
+
+        Returns:
+        tor_status - bool(), Returns True if self.ip is an exit node.
+
+        Exceptions:
+        Exception - Return base exception because I didn't want to
+        dig through all of stem's documentation to find their
+        exception classes (assuming they exist).
+        """
+        # Instantiating a TOR status object that we will use to
+        # indicate if an IP is an exit node.
+        tor_status = bool()
+        # Conenct to TOR and enumerate all descriptors (i.e., nodes).
+        # If exiting is allowed from the node, append it to tor_exit.
+        try:
+            for desc in tor_remote.get_server_descriptors():
+                if desc.exit_policy.is_exiting_allowed():
+                    self.tor_exit.append(desc.address)
+        except Exception:
+            self.log('Unable to retrieve TOR exit node list')
+        # Checking to see if the provided IP is an exit node.  If an
+        # IP is an exit node, set tor_status to True.
+        if self.ip in self.tor_exit:
+            tor_status = True
+        else:
+            tor_status = False
+        return tor_status
 
 
 class DomainOSINT:
@@ -864,6 +906,7 @@ class OSINTBlock():
         nt_ssh_bl - Nothink.org's SSH brute force source block list.
         adb_bl - Abuse IP Database's block list.
         ip_block_list - A combined list of unique IPs to block.
+        tor_exits - list(), A list of TOR exit nodes.
         self.log - Logging call.
 
         Methods:
@@ -876,6 +919,7 @@ class OSINTBlock():
         servers from nothink.org
         get_adb_bl - Retrieves the black list from the Abuse IP
         database.
+        get_tor_exits - Retrieves TOR IP list from TOR.
         generate_block_list - Combines all blocklists and generates
         a list of unique IPs to block."""
         self.et_ch = []
@@ -883,6 +927,7 @@ class OSINTBlock():
         self.bl_de = []
         self.nt_ssh_bl = []
         self.adb_bl = []
+        self.tor_exits = []
         self.ip_block_list = []
         self.log = getLogger('auto_ip_block')
 
@@ -1041,6 +1086,30 @@ class OSINTBlock():
             if validateIP(ip):
                 self.adb_bl.append(ip + '/32')
         return response.status_code
+    
+    def get_tor_exits(self):
+        """Checks if an IP address is a TOR Exit node.
+
+        Required Input:
+        None.
+
+        Output:
+        tor_exits - list(), A list of IP addresses tthat are TOR exit
+        nodes.  This is retrieved directly from TOR.
+
+        Exceptions:
+        Exception - Return base exception because I didn't want to
+        dig through all of stem's documentation to find their
+        exception classes (assuming they exist).
+        """
+        # Conenct to TOR and enumerate all descriptors (i.e., nodes).
+        # If exiting is allowed from the node, append it to tor_exit.
+        try:
+            for desc in tor_remote.get_server_descriptors():
+                if desc.exit_policy.is_exiting_allowed():
+                    self.tor_exits.append(desc.address)
+        except Exception:
+            self.log('Error retrieving TOR exit node list.')
 
     def generate_block_list(self):
         """Combines all blocklists and generates a list of unique IPs
@@ -1055,7 +1124,8 @@ class OSINTBlock():
             self.ssl_bl,
             self.bl_de,
             self.et_ch,
-            self.adb_bl
+            self.adb_bl,
+            self.tor_exits
         ]
         for _list in osint_lists:
             for item in _list:
@@ -1074,6 +1144,8 @@ class OSINTBlock():
                 write_item = unique_item + ' #ABL ET Compromised Host.'
             if unique_item in self.adb_bl:
                 write_item = unique_item + ' #ABL Abuse IP DB block list IP'
+            if unique_item in self.tor_exits:
+                write_item = unique_item + ' #ABL TOR exit node'
             self.ip_block_list.append(write_item)
         self.log.info(
             '%d IPs are in the consolidated block list.',
