@@ -15,7 +15,6 @@ Initializes the IP_OSINT object with the provided IP address and sets up instanc
 - `vt_results` (`dict`): Results from VirusTotal for the IP.
 - `vt_response` (`int`): The response code received from VirusTotal.
 - `fsb_mw` (`int`): Falcon Sandbox malware count for the IP.
-- `tbl_status` (`str`): Talos block list status for the IP.
 - `uh_results` (`dict`): URLHaus results for the IP.
 - `adb_results` (`list`): AbuseIPDB results for the IP.
 - `otx_results` (`dict`): OTX results for the IP.
@@ -53,17 +52,11 @@ Checks Falcon Sandbox (Hybrid Analysis) for malware information regarding the pr
 
 ---
 
-### `TBLChck(self)`
-Checks whether the IP address is on the Talos block list.
-
-#### Outputs:
-- `tbl_status` (`str`): Whether the IP is listed as blocked or not.
-- `response.status_code` (`int`): The HTTP response code returned by the Talos website.
-
----
-
 ### `UHChck(self)`
 Checks URLHaus for information about the provided IP address.
+
+### Required Input:
+- `abusech_api` (`str`): A valid URLHaus API key.
 
 #### Outputs:
 - `uh_results` (`dict`): A dictionary containing information about the IP address on URLHaus, including malware count and blacklisting status.
@@ -197,24 +190,27 @@ Checks VirusTotal for information on the specified domain.
 Checks Hybrid-Analysis (Falcon Sandbox) for information about the given domain.
 
 #### Required Input:
-- fsb_api (str): The Falcon Sandbox API key.
+- `fsb_api` (`str`): The Falcon Sandbox API key.
 
 #### Outputs:
-- fsb_ts_avg (int): The average threat score for the given domain.
+- `fsb_ts_avg` (`int`): The average threat score for the given domain.
 
 #### Returns:
-- response.status_code (int): The HTTP status code returned by Hybrid-Analysis.
+- `response.status_code` (`int`): The HTTP status code returned by Hybrid-Analysis.
 
 ---
 
-### `UHChck(self)`
+### `UHChck(self, abusech_api)`
 Checks URLHaus for information about the given domain.
 
+### Required Input:
+- `abusech_api` (`str`)
+
 #### Outputs:
-- uh_results (dict): A dictionary containing results from URLHaus regarding the domain.
+- `uh_results` (`dict`): A dictionary containing results from URLHaus regarding the domain.
 
 #### Returns:
-- response.get('query_status') (str): The query status returned by the URLHaus API.
+- `response.get('query_status')` (`str`): The query status returned by the URLHaus API.
 
 ---
 
@@ -222,16 +218,16 @@ Checks URLHaus for information about the given domain.
 Retrieves malware data for the given domain from AlienVault OTX.
 
 #### Required Input:
-- otx_key (str): The API key for AlienVault OTX.
+- `otx_key` (`str`): The API key for AlienVault OTX.
 
 #### Outputs:
-- otx_results (dict): A dictionary containing OTX-related malware data for the domain.
+- `otx_results` (`dict`): A dictionary containing OTX-related malware data for the domain.
 
 #### Returns:
-- response.status_code (int): The HTTP status code returned by the AlienVault OTX API.
+- `response.status_code` (`int`): The HTTP status code returned by the AlienVault OTX API.
 
 #### Exceptions:
-- HTTPError: Raised when the endpoint returns a non-200 HTTP response.
+- `HTTPError`: Raised when the endpoint returns a non-200 HTTP response.
 
 ---
 
@@ -270,16 +266,16 @@ The `URLOSINT` class is designed to retrieve Open Source Intelligence (OSINT) re
 Initializes the `URLOSINT` object with the given URL.
 
 #### Parameters:
-- `b_url` (str): The URL to check.
+- `b_url` (`str`): The URL to check.
 
 #### Instance Variables:
-- `b_url` (str): The URL to check.
-- `vt_response` (int): The response code returned by the VirusTotal API.
-- `vc_results` (dict): The results returned by the VirusTotal API.
-- `fsb_mw` (int): The count of associated malware according to Hybrid Analysis.
-- `uh_results` (dict): The results returned by URLHaus.
-- `otx_results` (int): The results returned by OTX (AlienVault).
-- `log` (logging.Logger): Logger instance for logging information and errors.
+- `b_url` (`str`): The URL to check.
+- `vt_response` (`int`): The response code returned by the VirusTotal API.
+- `vc_results` (`dict`): The results returned by the VirusTotal API.
+- `fsb_mw` (`int`): The count of associated malware according to Hybrid Analysis.
+- `uh_results` (`dict`): The results returned by URLHaus.
+- `otx_results` (`int`): The results returned by OTX (AlienVault).
+- `log` (`logging.Logger`): Logger instance for logging information and errors.
 
 ---
 
@@ -289,13 +285,13 @@ Initializes the `URLOSINT` object with the given URL.
 Checks VirusTotal for information about a given URL.
 
 #### Parameters:
-- `vt_api` (str): The VirusTotal API key.
+- `vt_api` (`str`): The VirusTotal API key.
 
 #### Outputs:
-- `vc_results` (dict): A dictionary containing VirusTotal scan date, positives, and permalink.
+- `vc_results` (`dict`): A dictionary containing VirusTotal scan date, positives, and permalink.
   
 #### Returns:
-- `response.status_code` (int): The HTTP response code returned by the VirusTotal API.
+- `response.status_code` (`int`): The HTTP response code returned by the VirusTotal API.
 
 ---
 
@@ -303,13 +299,13 @@ Checks VirusTotal for information about a given URL.
 Checks Hybrid Analysis (FalconSandbox) for information about a given URL.
 
 #### Parameters:
-- `fsb_api` (str): The FalconSandbox API key.
+- `fsb_api` (`str`): The FalconSandbox API key.
 
 #### Outputs:
-- `fsb_mw` (int): The count of malware samples associated with the given URL.
+- `fsb_mw` (`int`): The count of malware samples associated with the given URL.
 
 #### Returns:
-- `response.status_code` (int): The HTTP response code returned by the Hybrid Analysis API.
+- `response.status_code` (`int`): The HTTP response code returned by the Hybrid Analysis API.
 
 ---
 
@@ -317,10 +313,10 @@ Checks Hybrid Analysis (FalconSandbox) for information about a given URL.
 Checks URLHaus for information about a given URL.
 
 #### Outputs:
-- `uh_results` (dict): A dictionary containing threat status, blacklists, and reference URLs.
+- `uh_results` (`dict`): A dictionary containing threat status, blacklists, and reference URLs.
 
 #### Returns:
-- `response.get('query_status')` (str): The query status returned by the URLHaus API.
+- `response.get('query_status')` (`str`): The query status returned by the URLHaus API.
 
 ---
 
@@ -328,13 +324,13 @@ Checks URLHaus for information about a given URL.
 Retrieves general reputation data for a given URL from AlienVault OTX.
 
 #### Parameters:
-- `otx_key` (str): The API key for AlienVault OTX.
+- `otx_key` (`str`): The API key for AlienVault OTX.
 
 #### Outputs:
-- `otx_results` (int): The number of OTX pulses associated with the given URL.
+- `otx_results` (`int`): The number of OTX pulses associated with the given URL.
 
 #### Returns:
-- `response.status_code` (int): The HTTP response code returned by the AlienVault OTX API.
+- `response.status_code` (`int`): The HTTP response code returned by the AlienVault OTX API.
 
 #### Exceptions:
 - `HTTPError`: Raised if the HTTP request to OTX returns a non-200 status code.
@@ -382,16 +378,16 @@ This class provides methods to check file reputation and other related data from
 Initializes the `FileOSINT` object with the provided SHA256 hash.
 
 #### Parameters:
-- `filehash` (str): The SHA256 hash of the file.
+- `filehash` (`str`): The SHA256 hash of the file.
 
 #### Instance Variables:
-- `hash` (str): The SHA256 hash of the file.
-- `vt_response` (int): The response code returned by the VirusTotal API.
-- `vt_results` (dict): The results returned by VirusTotal for the supplied file hash.
-- `fsb_r_code` (int): The FalconSandbox response code.
-- `fsb_results` (dict): The results returned by FalconSandbox for the supplied file hash.
-- `otx_results` (dict): The general data from AlienVault OTX for the supplied file hash.
-- `log` (logging.Logger): Logger instance for logging information and errors.
+- `hash` (`str`): The SHA256 hash of the file.
+- `vt_response` (`int`): The response code returned by the VirusTotal API.
+- `vt_results` (`dict`): The results returned by VirusTotal for the supplied file hash.
+- `fsb_r_code` (`int`): The FalconSandbox response code.
+- `fsb_results` (`dict`): The results returned by FalconSandbox for the supplied file hash.
+- `otx_results` (`dic`t): The general data from AlienVault OTX for the supplied file hash.
+- `log` (`logging.Logger`): Logger instance for logging information and errors.
 
 ---
 
@@ -401,16 +397,16 @@ Initializes the `FileOSINT` object with the provided SHA256 hash.
 Checks VirusTotal for information related to the provided file hash.
 
 #### Parameters:
-- `vt_api` (str): The API key for VirusTotal.
+- `vt_api` (`str`): The API key for VirusTotal.
 
 #### Outputs:
-- `vt_results` (dict): The results returned by the VirusTotal API for the given file hash. Includes:
+- `vt_results` (`dict`): The results returned by the VirusTotal API for the given file hash. Includes:
   - `'av_detect'`: Number of antivirus engines that detected the file.
   - `'av_percentage'`: The percentage of antivirus engines that detected the file.
   - `'ref_url'`: The permalink to the VirusTotal report.
 
 #### Returns:
-- `response.status_code` (int): The HTTP status code returned by the VirusTotal API.
+- `response.status_code` (`int`): The HTTP status code returned by the VirusTotal API.
 
 ---
 
@@ -418,15 +414,15 @@ Checks VirusTotal for information related to the provided file hash.
 Checks FalconSandbox (Hybrid Analysis) for information related to the provided file hash.
 
 #### Parameters:
-- `fsb_api` (str): The API key for FalconSandbox.
+- `fsb_api` (`str`): The API key for FalconSandbox.
 
 #### Outputs:
-- `fsb_results` (dict): The results returned by the FalconSandbox API regarding the file hash. Includes:
+- `fsb_results` (`dict`): The results returned by the FalconSandbox API regarding the file hash. Includes:
   - `'verdict'`: The verdict of the file analysis (e.g., malicious, suspicious).
   - `'m_family'`: The malware family associated with the file, if applicable.
 
 #### Returns:
-- `response.status_code` (int): The HTTP status code returned by FalconSandbox API.
+- `response.status_code` (`int`): The HTTP status code returned by FalconSandbox API.
 
 ---
 
@@ -440,15 +436,15 @@ Checks FalconSandbox (Hybrid Analysis) for information related to the provided f
 Retrieves general data from AlienVault OTX for the supplied file hash.
 
 #### Parameters:
-- `otx_key` (str): The API key for AlienVault OTX.
+- `otx_key` (`str`): The API key for AlienVault OTX.
 
 #### Outputs:
-- `otx_results` (dict): A dictionary containing:
+- `otx_results` (`dict`): A dictionary containing:
   - `'p_count'`: The pulse count, representing the number of OTX pulses associated with the file hash.
   - `'m_families'`: A set of unique malware family names associated with the file.
 
 #### Returns:
-- `response.status_code` (int): The HTTP status code returned by the AlienVault OTX API.
+- `response.status_code` (`int`): The HTTP status code returned by the AlienVault OTX API.
 
 #### Exceptions:
 - **HTTPError**: Raised if the response from OTX is not successful (non-200 status code).
