@@ -35,7 +35,6 @@ class IPOSINT:
         vt_results - results from VirusTotal for the IP..
         vt_response - The response code received from VirusTotal.
         fsb_mw - Falcon SandBox malwre count for the IP.
-        tbl_status - Talos block list results for the IP.
         uh_results - URLHaus results for the IP.
         adb_results - AbuseIPDB results for the IP.
         otx_results - OTX results for the IP.
@@ -46,7 +45,6 @@ class IPOSINT:
         VTChck - Checks VirusTotal for info for a given IP address.
         FSBChck - Checks Falcon Sandbox (hybrid-analysis) for info for
         a given IP.
-        TBLChck - Checks to see if an IP is on the Talos block list.
         UHChck - Checks URLHaus for info for a given IP.
         AIDBChck - Checks the AbuseIP database for a given IP.
         OTXCheck - Retrieves data from AlienVault OTX for a given IP.
@@ -56,7 +54,6 @@ class IPOSINT:
         self.vt_results = dict()
         self.vt_response = int()
         self.fsb_mw = int()
-        self.tbl_status = str()
         self.uh_results = dict()
         self.adb_results = list()
         self.otx_results = dict()
@@ -81,7 +78,7 @@ class IPOSINT:
         response = get(url, params=params, timeout=5)
         if response.status_code == 200:
             self.log.info(
-                f'Succesfully retrieved data from VirusTotal for {self.ip}'
+                'Succesfully retrieved data from VirusTotal for %s', self.ip
             )
             data = response.json()
             self.vt_response = data.get('response_code')
@@ -127,12 +124,12 @@ class IPOSINT:
             response = post(url, headers=headers, data=data, timeout=5)
             if response.status_code == 200:
                 self.log.info(
-                    f'Successfully retrieved data from hybrid-analysis for {self.ip}'
+                    'Successfully retrieved data from hybrid-analysis for %s', self.ip
                 )
                 self.fsb_mw = response.json().get('count')
             else:
                 self.log.error(
-                    f'Error when retrieving data from FSB for {self.ip}. The HTTP response code is {response.status_code}'
+                    'Error when retrieving data from FSB for %s. The HTTP response code is %s' % (self.ip, response.status_code)
                 )
             status_code = 200
         except Timeout:
@@ -142,29 +139,6 @@ class IPOSINT:
             self.log.exception('SSL error when connecting to Falcon Sandbox')
             status_code = 495
         return status_code
-
-    def TBLChck(self):
-        """Checks to see if an IP is on the Talos block list.
-
-        Outputs:
-        tbl_status - Whether or not a given IP address is on the Talos
-        block list.
-
-        Returns:
-        response.status_code - The HTTP response code returned by the
-        Talos website."""
-        url = 'https://talosintelligence.com/documents/ip-blacklist'
-        response = get(url, timeout=5)
-        data = response.text.split('\n')
-        if self.ip in data:
-            self.tbl_status = 'block listed IP'
-        else:
-            self.tbl_status = 'Non-block listed IP'
-        if response.status_code == 200:
-            self.log.info('Successfully retrieved Talos IP black list.')
-        else:
-            self.log.error('Unable to retrieve Talos black list from Cisco.')
-        return response.status_code
 
     def UHChck(self, abusech_api):
         """Checks URLHaus for info for a given IP.
@@ -474,11 +448,8 @@ class DomainOSINT:
             }
         else:
             self.log.error(
-                'Unable to retrieve information from URLHaus for ' +
-                '%s. The query response is: %s' % (
-                    self.domain, response.get('query_status')
+                'Unable to retrieve information from URLHaus for %s. The query response is: %s' % (self.domain, response.get('query_status'))
                 )
-            )
         return response.get('query_status')
 
     def OTXCheck(self, otx_key):
@@ -1086,7 +1057,7 @@ class OSINTBlock():
             if validateIP(ip):
                 self.adb_bl.append(ip + '/32')
         return response.status_code
-    
+
     def get_tor_exits(self):
         """Checks if an IP address is a TOR Exit node.
 
